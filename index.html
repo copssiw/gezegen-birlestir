@@ -35,6 +35,12 @@ h2{margin:6px 0;font-size:24px}
 .big{font-size:44px;font-weight:800}
 #toast{position:fixed;left:50%;top:230px;transform:translateX(-50%);width:94vw;max-width:380px;background:rgba(20,28,70,.95);border:1px solid rgba(170,190,255,.5);border-radius:14px;padding:10px 14px;font-size:13px;line-height:1.4;pointer-events:none;z-index:5;text-align:left}
 #toast b{font-size:15px;color:#ffd27a}
+.btn.ok{background:#1f8a4c;border-color:#3fd07a}
+.btn.bad{background:#8a2a2a;border-color:#e06a6a}
+#quiz{background:rgba(5,6,15,.96);z-index:6}
+#qText{font-size:20px;line-height:1.35;max-width:94vw;margin:4px 0 8px}
+#qRes{font-size:14px;line-height:1.45;max-width:94vw;min-height:20px}
+.qtag{font-size:12px;letter-spacing:2px;color:#ffd27a}
 </style>
 </head>
 <body>
@@ -47,9 +53,10 @@ h2{margin:6px 0;font-size:24px}
   <button class="btn pri" id="bPlay">Başla</button>
   <button class="btn" id="bDaily">Günlük Meydan Okuma</button>
   <button class="btn" id="bCards">Gezegenler</button>
+  <button class="btn" id="bEdu">Eğitim Modu: Açık</button>
   <button class="btn" id="bPres">Sunum Modu</button>
   <button class="btn" id="bSnd">Ses: Açık</button>
-  <div class="tiny">Parmağını kaydır (bilgisayarda fareyi gezdir), bırakınca ya da tıklayınca gezegen düşer. Aynı iki gökcismi çarpışınca bir üst seviyeye birleşir. Sıralama gerçek boyutlara göredir: Ceres'ten Samanyolu'na!</div>
+  <div class="tiny">Parmağını kaydır (bilgisayarda fareyi gezdir), bırakınca ya da tıklayınca gezegen düşer. Aynı iki gökcismi çarpışınca bir üst seviyeye birleşir. Sıralama gerçek boyutlara göredir: Ceres'ten Samanyolu'na! Eğitim Modu açıkken 2 dakikada bir gezegenlerle ilgili bir soru çıkar.</div>
 </div>
 
 <div id="cards" class="screen" hidden>
@@ -64,6 +71,14 @@ h2{margin:6px 0;font-size:24px}
   <div class="sub" id="oInfo"></div>
   <button class="btn pri" id="bAgain">Tekrar Oyna</button>
   <button class="btn" id="bMenu2">Menü</button>
+</div>
+
+<div id="quiz" class="screen" hidden>
+  <div class="qtag">EĞİTİM SORUSU</div>
+  <div id="qText"></div>
+  <div id="qOpts"></div>
+  <div id="qRes"></div>
+  <button class="btn pri" id="qNext" hidden>Devam</button>
 </div>
 
 <div id="toast" hidden></div>
@@ -126,10 +141,10 @@ function newGame(m){
   mode=m;rng=m==='daily'?mulberry32(parseInt(dateStr(),10)):Math.random;
   bodies=[];score=0;combo=0;danger=0;maxL=0;won=false;banner=0;parts=[];floats=[];newRec=false;overT=0;
   bestKey=m==='daily'?'gz_bd_'+dateStr():'gz_best';best=parseInt(lsGet(bestKey)||'0',10)||0;
-  cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;
+  cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;eduT=0;
   hideAll();
 }
-function hideAll(){$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true}
+function hideAll(){$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true;$('quiz').hidden=true}
 
 /* ---------- Ses (Web Audio, dosyasız) ---------- */
 var AC=null,mg,sg,mu,arpBus,delay,musicOn=false,nextT=0,beat=0;
@@ -300,6 +315,7 @@ function update(dt){
     for(i=0;i<bodies.length;i++){var b=bodies[i];if(b.touched&&b.age>.6&&b.y-b.r<LINE){dg=true;break}}
     if(dg)danger+=dt;else danger=Math.max(0,danger-dt*2);
     if(danger>2.2)gameOver();
+    if(state==='play'&&eduOn&&!sunum){eduT+=dt;if(eduT>=EDU_SEC)askQ()}
   }else if(state==='over'&&sunum){
     overT+=dt;if(overT>3)newGame('normal');
   }
@@ -414,7 +430,7 @@ function draw(){
   // gezegenler
   for(i=0;i<bodies.length;i++){var b=bodies[i];drawPlanet(g,b.x,b.y,b.r*b.sc,b.l,b.a,t)}
   // bekleyen gezegen
-  if(state==='play'||state==='paused'){
+  if(state==='play'||state==='paused'||state==='quiz'){
     var rdy=t-lastDrop>=.45,rr=P[cur].r,x2=clamp(sunum?aimX:aimX,L+rr+1,R-rr-1);
     g.globalAlpha=rdy?.95:.25;drawPlanet(g,x2,SPAWN,rr,cur,0,t);g.globalAlpha=1;
   }
@@ -445,6 +461,57 @@ function draw(){
   }
 }
 
+/* ---------- Eğitim Modu ---------- */
+var EDU_SEC=120,eduOn=lsGet('gz_edu')!=='0',eduT=0,qUsed=[],qCur=null;
+var Q=[
+ {q:"Güneş Sistemi'nin en büyük gezegeni hangisidir?",o:["Jüpiter","Satürn","Neptün"],a:0,e:"Jüpiter'in içine 1300'den fazla Dünya sığar."},
+ {q:"Güneş'e en yakın gezegen hangisidir?",o:["Merkür","Venüs","Mars"],a:0,e:"Merkür Güneş'in etrafında bir turu sadece 88 günde atar."},
+ {q:"Güneş Sistemi'nin en sıcak gezegeni hangisidir?",o:["Venüs","Merkür","Mars"],a:0,e:"Venüs'ün kalın atmosferi ısıyı hapseder; yüzeyi yaklaşık 465 °C'dir. Güneş'e daha yakın olan Merkür'den bile sıcaktır."},
+ {q:"Hangi gezegene \"Kızıl Gezegen\" denir?",o:["Mars","Jüpiter","Venüs"],a:0,e:"Mars'ın yüzeyindeki demir oksit (pas) onu kırmızı gösterir."},
+ {q:"Dünya yüzeyinin yaklaşık yüzde kaçı sudur?",o:["%71","%30","%50"],a:0,e:"Dünya'nın yüzeyinin yaklaşık %71'i su ile kaplıdır."},
+ {q:"Hangi gezegen en görkemli halkalarıyla ünlüdür?",o:["Satürn","Mars","Merkür"],a:0,e:"Satürn'ün halkaları buz ve kaya parçalarından oluşur."},
+ {q:"Hangi gezegen neredeyse yan yatmış şekilde döner?",o:["Uranüs","Dünya","Mars"],a:0,e:"Uranüs'ün dönme ekseni yaklaşık 98° eğiktir, bu yüzden yan yatmış gibi döner."},
+ {q:"Güneş nedir?",o:["Bir yıldız","Bir gezegen","Bir uydu"],a:0,e:"Güneş bir yıldızdır; Güneş Sistemi'nin kütlesinin %99'undan fazlası onda toplanmıştır."},
+ {q:"Ay, Dünya'dan ortalama ne kadar uzaktadır?",o:["384.000 km","38.400 km","3.840.000 km"],a:0,e:"Ay'ın Dünya'ya ortalama uzaklığı yaklaşık 384.000 km'dir."},
+ {q:"Olympus Mons, Güneş Sistemi'nin bilinen en büyük yanardağıdır. Hangi gezegendedir?",o:["Mars","Venüs","Dünya"],a:0,e:"Olympus Mons Mars'tadır."},
+ {q:"Ceres hangi tür gök cismidir?",o:["Cüce gezegen","Yıldız","Uydu"],a:0,e:"Ceres, Mars ile Jüpiter arasındaki asteroit kuşağındaki cüce gezegendir."},
+ {q:"Samanyolu nedir?",o:["Bizim galaksimiz","Bir yıldız","Bir gezegen"],a:0,e:"Samanyolu yüz milyarlarca yıldızdan oluşan galaksimizdir; Güneş Sistemi içindedir."},
+ {q:"Betelgeuse hangi takımyıldızındadır?",o:["Orion (Avcı)","Akrep","Büyükayı"],a:0,e:"Betelgeuse, Orion takımyıldızındaki kızıl süperdev bir yıldızdır."},
+ {q:"Neptün'ün Güneş'in etrafında bir turu yaklaşık kaç yıl sürer?",o:["165 yıl","12 yıl","84 yıl"],a:0,e:"Neptün çok uzakta olduğu için bir turu yaklaşık 165 yıl sürer. (84 yıl Uranüs'ündür.)"},
+ {q:"Merkür'ün bir yılı (Güneş etrafında bir turu) kaç gün sürer?",o:["88 gün","365 gün","225 gün"],a:0,e:"Merkür Güneş'e çok yakın olduğu için bir turu 88 günde tamamlar."},
+ {q:"Jüpiter'in içine yaklaşık kaç Dünya sığar?",o:["1300'den fazla","13","130"],a:0,e:"Jüpiter o kadar büyüktür ki içine 1300'den fazla Dünya sığar."},
+ {q:"Güneş Sistemi'nin kütlesinin %99'undan fazlasını hangisi taşır?",o:["Güneş","Jüpiter","Dünya"],a:0,e:"Güneş, Güneş Sistemi'nin kütlesinin %99'undan fazlasını taşır."},
+ {q:"Satürn'ün yoğunluğu sudan azdır. Yeterince büyük bir okyanusa konsaydı ne olurdu?",o:["Yüzerdi","Batardı","Erirdi"],a:0,e:"Satürn'ün ortalama yoğunluğu sudan düşük olduğu için yüzerdi."},
+ {q:"Venüs'ün dönüş yönü nasıldır?",o:["Çoğu gezegenin tersi yönde","Çoğu gezegenle aynı yönde","Hiç dönmez"],a:0,e:"Venüs, çoğu gezegenin tersi yönde döner."},
+ {q:"Uranüs turkuaz-mavi renkte görünür. Bunun nedeni nedir?",o:["Atmosferindeki metan gazı","Okyanusları","Demir oksit"],a:0,e:"Uranüs'ün atmosferindeki metan, kırmızı ışığı soğurduğu için mavi-yeşil görünür."},
+ {q:"Işık, Samanyolu'nun bir ucundan öbür ucuna yaklaşık kaç yılda gider?",o:["100.000 yıl","1.000 yıl","1 milyon yıl"],a:0,e:"Samanyolu'nun çapı yaklaşık 100.000 ışık yılıdır."},
+ {q:"Hangisi Güneş'e en uzak gezegendir?",o:["Neptün","Satürn","Uranüs"],a:0,e:"Neptün, Güneş'e en uzak gezegendir; rüzgârları saatte 2000 km'ye yakın hıza ulaşabilir."}
+];
+function askQ(){
+  if(qUsed.length>=Q.length)qUsed=[];
+  var idx;do{idx=Math.floor(Math.random()*Q.length)}while(qUsed.indexOf(idx)>=0);
+  qUsed.push(idx);var q=Q[idx],order=[0,1,2],i,j,tmp;
+  for(i=2;i>0;i--){j=Math.floor(Math.random()*(i+1));tmp=order[i];order[i]=order[j];order[j]=tmp}
+  qCur={q:q,done:false};aiming=false;state='quiz';$('toast').hidden=true;
+  $('qText').textContent=q.q;
+  var box=$('qOpts');box.innerHTML='';
+  order.forEach(function(oi){
+    var b=document.createElement('button');b.className='btn';b.textContent=q.o[oi];b.style.display='block';b.style.margin='8px auto';
+    b.onclick=function(){answerQ(oi)};b.setAttribute('data-i',oi);box.appendChild(b);
+  });
+  $('qRes').innerHTML='';$('qNext').hidden=true;$('quiz').hidden=false;
+}
+function answerQ(oi){
+  if(!qCur||qCur.done)return;qCur.done=true;
+  var q=qCur.q,ok=oi===q.a,bs=$('qOpts').children,i;
+  for(i=0;i<bs.length;i++){var v=parseInt(bs[i].getAttribute('data-i'),10);if(v===q.a)bs[i].className='btn ok';else if(v===oi)bs[i].className='btn bad'}
+  if(ok){score+=100;$('qRes').innerHTML='<b>Doğru! +100 puan</b><br>'+q.e}
+  else $('qRes').innerHTML='<b>Olmadı. Doğru cevap: '+q.o[q.a]+'</b><br>'+q.e;
+  $('qNext').hidden=false;
+}
+function closeQ(){$('quiz').hidden=true;eduT=0;lastDrop=t;state='play'}
+function setEduTxt(){$('bEdu').textContent='Eğitim Modu: '+(eduOn?'Açık':'Kapalı')}
+
 /* ---------- Gezegenler listesi ---------- */
 function buildList(){
   var list=$('list');list.innerHTML='';
@@ -474,9 +541,11 @@ $('bCards').onclick=function(){buildList();$('menu').hidden=true;$('cards').hidd
 $('bBack').onclick=function(){$('cards').hidden=true;$('menu').hidden=false};
 $('bPres').onclick=function(){sunum=true;newGame('normal')};
 $('bSnd').onclick=function(){setMute(!muted)};
+$('bEdu').onclick=function(){eduOn=!eduOn;lsSet('gz_edu',eduOn?'1':'0');setEduTxt();eduT=0};
+$('qNext').onclick=closeQ;
 $('bAgain').onclick=function(){newGame(mode)};
 $('bMenu2').onclick=function(){state='menu';$('over').hidden=true;openMenu()};
-setMute(muted);
+setMute(muted);setEduTxt();
 
 /* ---------- Girdi ---------- */
 function pt(e){return (e.changedTouches&&e.changedTouches[0])||(e.touches&&e.touches[0])||e}
@@ -511,7 +580,7 @@ function loop(ts){
   var dt=Math.min((ts-last)/1000||0,1/30);last=ts;
   update(dt);draw();requestAnimationFrame(loop);
 }
-window.__gz={get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
+window.__gz={ask:function(){askQ()},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
 openMenu();
 requestAnimationFrame(loop);
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('./sw.js').catch(function(){});
