@@ -24,7 +24,7 @@ canvas#c{position:fixed;left:0;top:0;width:100%;height:100%;display:block}
 .btn{width:86vw;max-width:300px;padding:14px;border-radius:14px;border:1px solid rgba(160,180,255,.35);background:rgba(40,50,100,.55);color:#e8ecff;font-size:17px;font-weight:600}
 .btn.pri{background:linear-gradient(90deg,#4d6bff,#9a5cff);border-color:transparent}
 .btn:active{transform:scale(.97)}
-#list{width:94vw;max-width:420px;display:flex;flex-direction:column;gap:8px;text-align:left}
+#list,#blist{width:94vw;max-width:420px;display:flex;flex-direction:column;gap:8px;text-align:left}
 .row{display:flex;gap:12px;align-items:center;background:rgba(40,50,100,.4);border-radius:12px;padding:8px 10px}
 .row canvas{width:56px;height:56px;flex:none}
 .row b{font-size:16px}
@@ -41,6 +41,13 @@ h2{margin:6px 0;font-size:24px}
 #qText{font-size:20px;line-height:1.35;max-width:94vw;margin:4px 0 8px}
 #qRes{font-size:14px;line-height:1.45;max-width:94vw;min-height:20px}
 .qtag{font-size:12px;letter-spacing:2px;color:#ffd27a}
+.row.me{border:1px solid #ffd27a}
+#nameScr{background:#05060f;z-index:9}
+#nameIn{width:86vw;max-width:300px;padding:13px;font-size:18px;text-align:center;border-radius:12px;border:1px solid rgba(160,180,255,.5);background:#0d1230;color:#fff;-webkit-user-select:text;user-select:text;outline:none}
+#nameErr{color:#ff8a8a;min-height:18px;font-size:13px;max-width:300px}
+.rst{position:absolute;top:10px;right:10px;width:auto;max-width:none;padding:6px 10px;font-size:12px;border-radius:10px;border:1px solid rgba(160,180,255,.3);background:rgba(40,50,100,.35);color:#e8ecff;opacity:.75}
+#confirmScr{background:rgba(5,6,15,.96);z-index:10}
+.btn.danger{background:#a32d2d;border-color:#e06a6a}
 </style>
 </head>
 <body>
@@ -48,15 +55,18 @@ h2{margin:6px 0;font-size:24px}
 
 <div id="menu" class="screen">
   <div class="logo">GEZEGEN<br>BİRLEŞTİR</div>
+  <button class="rst" id="bReset">Sıfırla</button>
+  <div class="sub" id="whoTxt" style="color:#ffd27a;font-weight:700"></div>
   <div class="sub" id="bestTxt"></div>
   <button class="btn pri" id="bCont" hidden>Devam Et</button>
   <button class="btn pri" id="bPlay">Başla</button>
   <button class="btn" id="bDaily">Günlük Meydan Okuma</button>
   <button class="btn" id="bCards">Gezegenler</button>
+  <button class="btn" id="bBoard">Liderlik Tablosu</button>
   <button class="btn" id="bEdu">Eğitim Modu: Açık</button>
   <button class="btn" id="bPres">Sunum Modu</button>
   <button class="btn" id="bSnd">Ses: Açık</button>
-  <div class="tiny">Parmağını kaydır (bilgisayarda fareyi gezdir), bırakınca ya da tıklayınca gezegen düşer. Aynı iki gökcismi çarpışınca bir üst seviyeye birleşir. Sıralama gerçek boyutlara göredir: Ceres'ten Samanyolu'na! Eğitim Modu açıkken 2 dakikada bir gezegenlerle ilgili bir soru çıkar.</div>
+  <div class="tiny">Parmağını kaydır (bilgisayarda fareyi gezdir), bırakınca ya da tıklayınca gezegen düşer. Aynı iki gökcismi çarpışınca bir üst seviyeye birleşir. Sıralama gerçek boyutlara göredir: Ceres'ten Samanyolu'na! Eğitim Modu açıkken yaklaşık 1 dakikada bir soru çıkar: doğru +100/125/150, yanlış −25 puan. Birleşme +5, her yeni gezegen +100'den başlayıp artan bonus verir.</div>
 </div>
 
 <div id="cards" class="screen" hidden>
@@ -73,8 +83,31 @@ h2{margin:6px 0;font-size:24px}
   <button class="btn" id="bMenu2">Menü</button>
 </div>
 
+<div id="confirmScr" class="screen" hidden>
+  <h2>Emin misin?</h2>
+  <div class="sub" style="max-width:300px;line-height:1.5">Liderlik tablosundaki bütün hesaplar ve kayıtlı oyunlar silinecek. Bu işlem geri alınamaz.</div>
+  <button class="btn danger" id="rstYes">Evet, hepsini sil</button>
+  <button class="btn" id="rstNo">Vazgeç</button>
+</div>
+
+<div id="board" class="screen" hidden>
+  <h2>Liderlik Tablosu</h2>
+  <div class="sub">Bu cihazda. İstediğin satırdan Devam / Oyna diyerek o hesaptan oynayabilirsin.</div>
+  <div id="blist"></div>
+  <button class="btn pri" id="boardBack">Geri</button>
+</div>
+
+<div id="nameScr" class="screen" hidden>
+  <div class="logo" style="font-size:32px">KİMSİN?</div>
+  <div class="sub">Bu oturum için bir takma ad seç.<br>Daha önce kullandığın bir ad olamaz.</div>
+  <input id="nameIn" maxlength="14" autocomplete="off" autocapitalize="words" placeholder="Takma adın">
+  <div id="nameErr"></div>
+  <div class="tiny" style="margin-top:0">Lütfen saygılı bir ad seç. Başkalarını rahatsız eden ya da kırıcı adlar yazma.</div>
+  <button class="btn pri" id="nameOk">Tamam</button>
+</div>
+
 <div id="quiz" class="screen" hidden>
-  <div class="qtag">EĞİTİM SORUSU</div>
+  <div class="qtag" id="qTag">EĞİTİM SORUSU</div>
   <div id="qText"></div>
   <div id="qOpts"></div>
   <div id="qRes"></div>
@@ -127,7 +160,7 @@ window.addEventListener('resize',resize);resize();
 var stars=[];for(var i=0;i<90;i++)stars.push({x:Math.random(),y:Math.random(),s:Math.random()*1.6+.4,p:Math.random()*6});
 
 /* ---------- Durum ---------- */
-var state='menu',bodies=[],score=0,best=0,bestKey='gz_best',cur=0,nxt=0,aimX=200,aiming=false;
+var state='menu',bodies=[],score=0,best=0,bestKey='gz_best2',cur=0,nxt=0,aimX=200,aiming=false;
 var lastDrop=-9,t=0,danger=0,combo=0,comboT=-9,maxL=0,mode='normal',sunum=false,botT=1,rng=Math.random;
 var parts=[],floats=[],banner=0,won=false,idc=0,overT=0,newRec=false;
 var gzMax=parseInt(lsGet('gz_max2')||'0',10)||0;
@@ -140,11 +173,11 @@ function mk(x,y,l){var r=P[l].r;return{id:++idc,x:x,y:y,vx:0,vy:0,l:l,r:r,im:1/(
 function newGame(m){
   mode=m;rng=m==='daily'?mulberry32(parseInt(dateStr(),10)):Math.random;
   bodies=[];score=0;combo=0;danger=0;maxL=0;won=false;banner=0;parts=[];floats=[];newRec=false;overT=0;
-  bestKey=m==='daily'?'gz_bd_'+dateStr():'gz_best';best=parseInt(lsGet(bestKey)||'0',10)||0;
-  cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;eduT=0;
+  bestKey=m==='daily'?'gz_bd2_'+dateStr():'gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
+  cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();
   hideAll();
 }
-function hideAll(){$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true;$('quiz').hidden=true}
+function hideAll(){$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true;$('quiz').hidden=true;$('board').hidden=true}
 
 /* ---------- Ses (Web Audio, dosyasız) ---------- */
 var AC=null,mg,sg,mu,arpBus,delay,musicOn=false,nextT=0,beat=0;
@@ -215,16 +248,16 @@ function doMerge(a,c){
   a.dead=c.dead=true;
   var mx=(a.x+c.x)/2,my=(a.y+c.y)/2;
   if(a.l===NL-1){
-    score+=1000;floats.push({x:mx,y:my,t:1.6,txt:'GALAKSİ BİRLEŞMESİ +1000',c:'#ffe27a'});
+    addScore(1000);floats.push({x:mx,y:my,t:1.6,txt:'GALAKSİ BİRLEŞMESİ +1000',c:'#ffe27a'});
     burst(mx,my,'#ffe27a',50,260);sfxWin();return;
   }
   var nl=a.l+1,b=mk(mx,my,nl);b.vx=(a.vx+c.vx)/2;b.vy=(a.vy+c.vy)/2;b.touched=true;b.sc=.55;b.a=a.a;
   born.push(b);
   if(t-comboT<1.3)combo++;else combo=1;comboT=t;
-  var mult=Math.min(combo,5),pts=((nl+1)*(nl+2)/2)*mult;score+=pts;
-  floats.push({x:mx,y:my-b.r*.4,t:1,txt:'+'+pts+(combo>1?'  x'+mult:''),c:combo>1?'#ffd27a':'#ffffff'});
+  addScore(5);
+  floats.push({x:mx,y:my-b.r*.4,t:1,txt:'+5',c:'#ffffff'});
   burst(mx,my,'#bcd0ff',10+nl*2,120+nl*12);sfxMerge(nl,combo);
-  if(nl>maxL){maxL=nl;onReach(nl)}
+  if(nl>maxL){maxL=nl;onReach(nl,mx,my-b.r*.4-24)}
 }
 function physics(dt){
   var n=3,h=dt/n,i,j,k;
@@ -271,7 +304,8 @@ function drop(){
   var l=cur,r=P[l].r,x=clamp(aimX,L+r+1,R-r-1);
   bodies.push(mk(x,SPAWN,l));lastDrop=t;sfxDrop();cur=nxt;nxt=pick();
 }
-function onReach(nl){
+function onReach(nl,fx,fy){
+  var bonus=100+50*(nl-1);addScore(bonus);floats.push({x:fx,y:fy,t:1.8,txt:'+'+bonus+' '+P[nl].n,c:'#7af0a0'});
   var first=nl>gzMax;
   if(first){gzMax=nl;lsSet('gz_max2',''+nl)}
   if(nl>=1&&(first||sunum))showToast(nl);
@@ -284,7 +318,7 @@ function showToast(l){
   e.hidden=false;toastT=5.5;sfxCard();
 }
 function gameOver(){
-  state='over';sfxOver();
+  state='over';sfxOver();saveBoard();
   if(!sunum){
     if(score>best){best=score;lsSet(bestKey,''+best);newRec=true}
     $('oScore').textContent=score;
@@ -303,6 +337,7 @@ function confetti(){
 
 function update(dt){
   t+=dt;
+  if((boardDirty&&t-lastSave>2)||(state==='play'&&!sunum&&t-lastSave>3))saveBoard();
   if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').hidden=true}
   if(banner>0)banner-=dt;
   for(var i=parts.length-1;i>=0;i--){var p=parts[i];p.life-=dt;if(p.life<=0){parts.splice(i,1);continue}p.vy+=p.g*dt;p.x+=p.vx*dt;p.y+=p.vy*dt}
@@ -315,7 +350,7 @@ function update(dt){
     for(i=0;i<bodies.length;i++){var b=bodies[i];if(b.touched&&b.age>.6&&b.y-b.r<LINE){dg=true;break}}
     if(dg)danger+=dt;else danger=Math.max(0,danger-dt*2);
     if(danger>2.2)gameOver();
-    if(state==='play'&&eduOn&&!sunum){eduT+=dt;if(eduT>=EDU_SEC)askQ()}
+    if(state==='play'&&eduOn&&!sunum){eduT+=dt;if(eduT>=eduNext)askQ()}
   }else if(state==='over'&&sunum){
     overT+=dt;if(overT>3)newGame('normal');
   }
@@ -461,38 +496,174 @@ function draw(){
   }
 }
 
+/* ---------- Oturum, puan ve liderlik ---------- */
+function ssGet(k){try{return sessionStorage.getItem(k)}catch(e){return null}}
+function ssSet(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}
+function loadBoard(){
+  var r=lsGet('gz_board2'),a=[];
+  try{a=JSON.parse(r||'[]')}catch(e){a=[]}
+  if(!Array.isArray(a))a=[];
+  var out=[],seen={};
+  a.forEach(function(e){
+    if(!e||typeof e.n!=='string')return;
+    var n=e.n.replace(/\s+/g,' ').trim().slice(0,14);if(n.length<1)return;
+    var k=nk(n),sc2=isFinite(+e.s)?Math.max(0,Math.floor(+e.s)):0;
+    if(seen[k]){if(seen[k].s<sc2)seen[k].s=sc2;return}
+    var o={n:n,s:sc2,d:isFinite(+e.d)&&+e.d>0?+e.d:Date.now(),g:(e.g&&typeof e.g==='object'&&Array.isArray(e.g.b))?e.g:null};
+    seen[k]=o;out.push(o);
+  });
+  return out;
+}
+var board=loadBoard(),me=null,boardDirty=false,lastSave=0,sessName='',removed={};
+function snap(){
+  if(!me||sunum)return;
+  if(state==='over'){me.g=null;return}
+  if(state!=='play'&&state!=='paused'&&state!=='quiz')return;
+  var r=function(v){return Math.round(v*10)/10};
+  me.g={mo:mode,s:score,c:cur,n:nxt,ml:maxL,w:won?1:0,b:bodies.map(function(o){return{x:r(o.x),y:r(o.y),vx:r(o.vx),vy:r(o.vy),l:o.l,a:r(o.a),t:o.touched?1:0}})};
+}
+function syncBoard(){
+  var stored=loadBoard(),out=[],seen={},mk2=me?nk(me.n):null;
+  stored.forEach(function(e){
+    var k=nk(e.n);if(removed[k]||seen[k])return;seen[k]=1;
+    out.push(k===mk2?me:e);
+  });
+  if(me&&!seen[mk2]&&!removed[mk2])out.push(me);
+  if(out.length>60){
+    var keep=out.slice().sort(function(a,b){return ((b===me)-(a===me))||(b.s-a.s)}).slice(0,60);
+    out=out.filter(function(e){return keep.indexOf(e)>=0});
+  }
+  board=out;
+}
+function writeBoard(){try{localStorage.setItem('gz_board2',JSON.stringify(board));return true}catch(e){return false}}
+function saveBoard(){
+  snap();syncBoard();
+  if(!writeBoard()){board.forEach(function(e){if(e!==me)e.g=null});writeBoard()}
+  boardDirty=false;lastSave=t;
+}
+function loadGame(g){
+  try{
+    var bs=(Array.isArray(g.b)?g.b:[]).slice(0,150).filter(function(o){return o&&typeof o.x==='number'&&typeof o.y==='number'&&isFinite(o.x)&&isFinite(o.y)&&o.l>=0&&o.l<NL&&o.l===Math.floor(o.l)});
+    var nb=bs.map(function(o){var q=mk(clamp(o.x,L+P[o.l].r,R-P[o.l].r),clamp(o.y,0,FLOOR-P[o.l].r),o.l);q.vx=clamp(+o.vx||0,-900,900);q.vy=clamp(+o.vy||0,-900,900);q.a=+o.a||0;q.age=1;q.touched=!!o.t;return q});
+    mode=g.mo==='daily'?'daily':'normal';rng=mode==='daily'?mulberry32(parseInt(dateStr(),10)):Math.random;
+    bodies=nb;
+    score=isFinite(+g.s)?Math.max(0,Math.floor(+g.s)):0;
+    cur=(g.c>=0&&g.c<NL&&g.c===Math.floor(g.c))?g.c:pick();nxt=(g.n>=0&&g.n<NL&&g.n===Math.floor(g.n))?g.n:pick();
+    maxL=Math.max(0,Math.min(NL-1,Math.floor(+g.ml||0)));won=!!g.w;combo=0;danger=0;banner=0;parts=[];floats=[];newRec=false;overT=0;
+    bestKey=mode==='daily'?'gz_bd2_'+dateStr():'gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
+    lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();hideAll();return true;
+  }catch(err){return false}
+}
+function playAs(e){
+  var key=nk(e.n),same=(me&&nk(me.n)===key);
+  if(same&&state==='paused'){$('board').hidden=true;state='play';lastDrop=t;hideAll();return}
+  saveBoard();
+  var fe=null;board.forEach(function(x){if(nk(x.n)===key)fe=x});
+  if(!fe)fe=e;
+  if(!same){
+    if(me&&me.s===0&&!me.g){removed[nk(me.n)]=1;var ix=board.indexOf(me);if(ix>=0)board.splice(ix,1)}
+    me=fe;sessName=fe.n;ssSet('gz_sess',fe.n);
+  }
+  $('board').hidden=true;
+  if(!(fe.g&&loadGame(fe.g)))newGame('normal');
+  saveBoard();
+}
+function addScore(d){score=Math.max(0,score+d);if(!sunum&&me&&score>me.s){me.s=score;boardDirty=true}}
+function nk(x){var y=x;try{y=x.toLocaleLowerCase('tr-TR')}catch(e){y=x.toLowerCase()}return y.replace(/ı/g,'i').replace(/\s+/g,' ').trim()}
+function showName(){$('nameErr').textContent='';$('nameIn').value='';$('nameScr').hidden=false;setTimeout(function(){try{$('nameIn').focus()}catch(e){}},200)}
+function acceptName(){
+  var v=$('nameIn').value.replace(/\s+/g,' ').trim(),err=$('nameErr'),i;
+  if(v.length<2){err.textContent='En az 2 harf yaz.';return}
+  var k=nk(v);syncBoard();
+  for(i=0;i<board.length;i++)if(nk(board[i].n)===k){err.textContent='Bu ad daha önce kullanıldı. Başka bir ad seç.';return}
+  delete removed[k];me={n:v,s:0,d:Date.now(),g:null};board.push(me);sessName=v;ssSet('gz_sess',v);saveBoard();
+  $('nameScr').hidden=true;err.textContent='';openMenu();
+}
+function initSession(){
+  var nm=ssGet('gz_sess'),i;
+  if(nm){
+    syncBoard();for(i=0;i<board.length;i++)if(nk(board[i].n)===nk(nm)){me=board[i]}
+    if(!me){me={n:nm,s:0,d:Date.now(),g:null};board.push(me);saveBoard()}
+    sessName=me.n;openMenu();return;
+  }
+  showName();
+}
+function buildBoard(){
+  saveBoard();
+  var list=$('blist');list.innerHTML='';
+  var arr=board.slice().sort(function(a,b){return b.s-a.s}).slice(0,30);
+  arr.forEach(function(e,i){
+    var row=document.createElement('div');row.className='row'+(e===me?' me':'');
+    var rk=document.createElement('b');rk.textContent=(i+1)+'.';rk.style.width='34px';
+    var mid=document.createElement('div');mid.style.flex='1';
+    var nm=document.createElement('b');nm.textContent=e.n+(e===me?' (sen)':'');
+    var dt=document.createElement('p');
+    var live=(e===me&&!sunum&&(state==='paused'||state==='play'||state==='quiz'))?' · şu an: '+score:'';
+    dt.textContent=new Date(e.d).toLocaleDateString('tr-TR')+live;
+    mid.appendChild(nm);mid.appendChild(dt);
+    var sc2=document.createElement('b');sc2.textContent=e.s;sc2.style.color='#ffd27a';
+    row.appendChild(rk);row.appendChild(mid);row.appendChild(sc2);
+    if(!sunum){
+      var canRes=(e===me&&state==='paused')||!!e.g,pb=document.createElement('button');
+      pb.className=(e===me?'btn pri':'btn');pb.textContent=canRes?'Devam':'Oyna';
+      pb.style.cssText='width:auto;max-width:none;padding:9px 14px;font-size:14px;margin-left:8px;flex:none';
+      pb.onclick=function(){playAs(e)};
+      row.appendChild(pb);
+    }
+    list.appendChild(row);
+  });
+}
+document.addEventListener('visibilitychange',function(){if(document.hidden)saveBoard()});
+window.addEventListener('pagehide',saveBoard);
+
 /* ---------- Eğitim Modu ---------- */
-var EDU_SEC=120,eduOn=lsGet('gz_edu')!=='0',eduT=0,qUsed=[],qCur=null;
+function nextQTime(){return 45+Math.random()*45}
+var eduOn=lsGet('gz_edu')!=='0',eduT=0,eduNext=nextQTime(),qUsed=[],qCur=null;
+/* l: sorunun ilgili olduğu gezegen seviyesi, z: puan (zorluk) */
 var Q=[
- {q:"Güneş Sistemi'nin en büyük gezegeni hangisidir?",o:["Jüpiter","Satürn","Neptün"],a:0,e:"Jüpiter'in içine 1300'den fazla Dünya sığar."},
- {q:"Güneş'e en yakın gezegen hangisidir?",o:["Merkür","Venüs","Mars"],a:0,e:"Merkür Güneş'in etrafında bir turu sadece 88 günde atar."},
- {q:"Güneş Sistemi'nin en sıcak gezegeni hangisidir?",o:["Venüs","Merkür","Mars"],a:0,e:"Venüs'ün kalın atmosferi ısıyı hapseder; yüzeyi yaklaşık 465 °C'dir. Güneş'e daha yakın olan Merkür'den bile sıcaktır."},
- {q:"Hangi gezegene \"Kızıl Gezegen\" denir?",o:["Mars","Jüpiter","Venüs"],a:0,e:"Mars'ın yüzeyindeki demir oksit (pas) onu kırmızı gösterir."},
- {q:"Dünya yüzeyinin yaklaşık yüzde kaçı sudur?",o:["%71","%30","%50"],a:0,e:"Dünya'nın yüzeyinin yaklaşık %71'i su ile kaplıdır."},
- {q:"Hangi gezegen en görkemli halkalarıyla ünlüdür?",o:["Satürn","Mars","Merkür"],a:0,e:"Satürn'ün halkaları buz ve kaya parçalarından oluşur."},
- {q:"Hangi gezegen neredeyse yan yatmış şekilde döner?",o:["Uranüs","Dünya","Mars"],a:0,e:"Uranüs'ün dönme ekseni yaklaşık 98° eğiktir, bu yüzden yan yatmış gibi döner."},
- {q:"Güneş nedir?",o:["Bir yıldız","Bir gezegen","Bir uydu"],a:0,e:"Güneş bir yıldızdır; Güneş Sistemi'nin kütlesinin %99'undan fazlası onda toplanmıştır."},
- {q:"Ay, Dünya'dan ortalama ne kadar uzaktadır?",o:["384.000 km","38.400 km","3.840.000 km"],a:0,e:"Ay'ın Dünya'ya ortalama uzaklığı yaklaşık 384.000 km'dir."},
- {q:"Olympus Mons, Güneş Sistemi'nin bilinen en büyük yanardağıdır. Hangi gezegendedir?",o:["Mars","Venüs","Dünya"],a:0,e:"Olympus Mons Mars'tadır."},
- {q:"Ceres hangi tür gök cismidir?",o:["Cüce gezegen","Yıldız","Uydu"],a:0,e:"Ceres, Mars ile Jüpiter arasındaki asteroit kuşağındaki cüce gezegendir."},
- {q:"Samanyolu nedir?",o:["Bizim galaksimiz","Bir yıldız","Bir gezegen"],a:0,e:"Samanyolu yüz milyarlarca yıldızdan oluşan galaksimizdir; Güneş Sistemi içindedir."},
- {q:"Betelgeuse hangi takımyıldızındadır?",o:["Orion (Avcı)","Akrep","Büyükayı"],a:0,e:"Betelgeuse, Orion takımyıldızındaki kızıl süperdev bir yıldızdır."},
- {q:"Neptün'ün Güneş'in etrafında bir turu yaklaşık kaç yıl sürer?",o:["165 yıl","12 yıl","84 yıl"],a:0,e:"Neptün çok uzakta olduğu için bir turu yaklaşık 165 yıl sürer. (84 yıl Uranüs'ündür.)"},
- {q:"Merkür'ün bir yılı (Güneş etrafında bir turu) kaç gün sürer?",o:["88 gün","365 gün","225 gün"],a:0,e:"Merkür Güneş'e çok yakın olduğu için bir turu 88 günde tamamlar."},
- {q:"Jüpiter'in içine yaklaşık kaç Dünya sığar?",o:["1300'den fazla","13","130"],a:0,e:"Jüpiter o kadar büyüktür ki içine 1300'den fazla Dünya sığar."},
- {q:"Güneş Sistemi'nin kütlesinin %99'undan fazlasını hangisi taşır?",o:["Güneş","Jüpiter","Dünya"],a:0,e:"Güneş, Güneş Sistemi'nin kütlesinin %99'undan fazlasını taşır."},
- {q:"Satürn'ün yoğunluğu sudan azdır. Yeterince büyük bir okyanusa konsaydı ne olurdu?",o:["Yüzerdi","Batardı","Erirdi"],a:0,e:"Satürn'ün ortalama yoğunluğu sudan düşük olduğu için yüzerdi."},
- {q:"Venüs'ün dönüş yönü nasıldır?",o:["Çoğu gezegenin tersi yönde","Çoğu gezegenle aynı yönde","Hiç dönmez"],a:0,e:"Venüs, çoğu gezegenin tersi yönde döner."},
- {q:"Uranüs turkuaz-mavi renkte görünür. Bunun nedeni nedir?",o:["Atmosferindeki metan gazı","Okyanusları","Demir oksit"],a:0,e:"Uranüs'ün atmosferindeki metan, kırmızı ışığı soğurduğu için mavi-yeşil görünür."},
- {q:"Işık, Samanyolu'nun bir ucundan öbür ucuna yaklaşık kaç yılda gider?",o:["100.000 yıl","1.000 yıl","1 milyon yıl"],a:0,e:"Samanyolu'nun çapı yaklaşık 100.000 ışık yılıdır."},
- {q:"Hangisi Güneş'e en uzak gezegendir?",o:["Neptün","Satürn","Uranüs"],a:0,e:"Neptün, Güneş'e en uzak gezegendir; rüzgârları saatte 2000 km'ye yakın hıza ulaşabilir."}
+ {l:9,z:100,q:"Güneş Sistemi'nin en büyük gezegeni hangisidir?",o:["Jüpiter","Satürn","Neptün"],a:0,e:"Jüpiter'in içine 1300'den fazla Dünya sığar."},
+ {l:2,z:100,q:"Güneş'e en yakın gezegen hangisidir?",o:["Merkür","Venüs","Mars"],a:0,e:"Merkür Güneş'in etrafında bir turu sadece 88 günde atar."},
+ {l:4,z:125,q:"Güneş Sistemi'nin en sıcak gezegeni hangisidir?",o:["Venüs","Merkür","Mars"],a:0,e:"Venüs'ün kalın atmosferi ısıyı hapseder; yüzeyi yaklaşık 465 °C'dir. Güneş'e daha yakın olan Merkür'den bile sıcaktır."},
+ {l:3,z:100,q:"Hangi gezegene \"Kızıl Gezegen\" denir?",o:["Mars","Jüpiter","Venüs"],a:0,e:"Mars'ın yüzeyindeki demir oksit (pas) onu kırmızı gösterir."},
+ {l:5,z:100,q:"Dünya yüzeyinin yaklaşık yüzde kaçı sudur?",o:["%71","%30","%50"],a:0,e:"Dünya'nın yüzeyinin yaklaşık %71'i su ile kaplıdır."},
+ {l:8,z:100,q:"Hangi gezegen en görkemli halkalarıyla ünlüdür?",o:["Satürn","Mars","Merkür"],a:0,e:"Satürn'ün halkaları buz ve kaya parçalarından oluşur."},
+ {l:7,z:125,q:"Hangi gezegen neredeyse yan yatmış şekilde döner?",o:["Uranüs","Dünya","Mars"],a:0,e:"Uranüs'ün dönme ekseni yaklaşık 98° eğiktir, bu yüzden yan yatmış gibi döner."},
+ {l:10,z:100,q:"Güneş nedir?",o:["Bir yıldız","Bir gezegen","Bir uydu"],a:0,e:"Güneş bir yıldızdır; Güneş Sistemi'nin kütlesinin %99'undan fazlası onda toplanmıştır."},
+ {l:1,z:125,q:"Ay, Dünya'dan ortalama ne kadar uzaktadır?",o:["384.000 km","38.400 km","3.840.000 km"],a:0,e:"Ay'ın Dünya'ya ortalama uzaklığı yaklaşık 384.000 km'dir."},
+ {l:3,z:125,q:"Olympus Mons, Güneş Sistemi'nin bilinen en büyük yanardağıdır. Hangi gezegendedir?",o:["Mars","Venüs","Dünya"],a:0,e:"Olympus Mons Mars'tadır."},
+ {l:0,z:125,q:"Ceres hangi tür gök cismidir?",o:["Cüce gezegen","Yıldız","Uydu"],a:0,e:"Ceres, Mars ile Jüpiter arasındaki asteroit kuşağındaki cüce gezegendir."},
+ {l:12,z:100,q:"Samanyolu nedir?",o:["Bizim galaksimiz","Bir yıldız","Bir gezegen"],a:0,e:"Samanyolu yüz milyarlarca yıldızdan oluşan galaksimizdir; Güneş Sistemi içindedir."},
+ {l:11,z:150,q:"Betelgeuse hangi takımyıldızındadır?",o:["Orion (Avcı)","Akrep","Büyükayı"],a:0,e:"Betelgeuse, Orion takımyıldızındaki kızıl süperdev bir yıldızdır."},
+ {l:6,z:150,q:"Neptün'ün Güneş'in etrafında bir turu yaklaşık kaç yıl sürer?",o:["165 yıl","12 yıl","84 yıl"],a:0,e:"Neptün çok uzakta olduğu için bir turu yaklaşık 165 yıl sürer. (84 yıl Uranüs'ündür.)"},
+ {l:2,z:125,q:"Merkür'ün bir yılı (Güneş etrafında bir turu) kaç gün sürer?",o:["88 gün","365 gün","225 gün"],a:0,e:"Merkür Güneş'e çok yakın olduğu için bir turu 88 günde tamamlar."},
+ {l:9,z:125,q:"Jüpiter'in içine yaklaşık kaç Dünya sığar?",o:["1300'den fazla","13","130"],a:0,e:"Jüpiter o kadar büyüktür ki içine 1300'den fazla Dünya sığar."},
+ {l:10,z:125,q:"Güneş Sistemi'nin kütlesinin %99'undan fazlasını hangisi taşır?",o:["Güneş","Jüpiter","Dünya"],a:0,e:"Güneş, Güneş Sistemi'nin kütlesinin %99'undan fazlasını taşır."},
+ {l:8,z:150,q:"Satürn'ün yoğunluğu sudan azdır. Yeterince büyük bir okyanusa konsaydı ne olurdu?",o:["Yüzerdi","Batardı","Erirdi"],a:0,e:"Satürn'ün ortalama yoğunluğu sudan düşük olduğu için yüzerdi."},
+ {l:4,z:150,q:"Venüs'ün dönüş yönü nasıldır?",o:["Çoğu gezegenin tersi yönde","Çoğu gezegenle aynı yönde","Hiç dönmez"],a:0,e:"Venüs, çoğu gezegenin tersi yönde döner."},
+ {l:7,z:150,q:"Uranüs turkuaz-mavi renkte görünür. Bunun nedeni nedir?",o:["Atmosferindeki metan gazı","Okyanusları","Demir oksit"],a:0,e:"Uranüs'ün atmosferindeki metan, kırmızı ışığı soğurduğu için mavi-yeşil görünür."},
+ {l:12,z:150,q:"Işık, Samanyolu'nun bir ucundan öbür ucuna yaklaşık kaç yılda gider?",o:["100.000 yıl","1.000 yıl","1 milyon yıl"],a:0,e:"Samanyolu'nun çapı yaklaşık 100.000 ışık yılıdır."},
+ {l:6,z:100,q:"Hangisi Güneş'e en uzak gezegendir?",o:["Neptün","Satürn","Uranüs"],a:0,e:"Neptün, Güneş'e en uzak gezegendir; rüzgârları saatte 2000 km'ye yakın hıza ulaşabilir."},
+ {l:1,z:100,q:"Dünya'nın kaç doğal uydusu vardır?",o:["1","2","8"],a:0,e:"Dünya'nın tek doğal uydusu Ay'dır."},
+ {l:1,z:125,q:"Okyanuslardaki gelgitlere en çok hangisi neden olur?",o:["Ay","Mars","Venüs"],a:0,e:"Ay'ın çekimi gelgitlere neden olur; Güneş'in etkisi daha azdır."},
+ {l:2,z:100,q:"Güneş Sistemi'nin en küçük gezegeni hangisidir?",o:["Merkür","Mars","Venüs"],a:0,e:"Merkür, Güneş Sistemi'nin en küçük gezegenidir."},
+ {l:3,z:125,q:"Mars neden kırmızı görünür?",o:["Yüzeyindeki demir oksit (pas) yüzünden","Çok sıcak olduğu için","Okyanusları yüzünden"],a:0,e:"Mars'ın toprağındaki demir oksit ona pas rengi verir."},
+ {l:0,z:125,q:"Ceres hangi iki gezegenin arasındaki kuşakta bulunur?",o:["Mars ile Jüpiter","Dünya ile Mars","Satürn ile Uranüs"],a:0,e:"Asteroit kuşağı Mars ile Jüpiter arasındadır."},
+ {l:5,z:100,q:"Bildiğimiz tek yaşam yuvası hangi gezegendir?",o:["Dünya","Mars","Venüs"],a:0,e:"Şimdilik yaşamın bilindiği tek gezegen Dünya'dır."},
+ {l:5,z:125,q:"Dünya'nın çapı yaklaşık kaç km'dir?",o:["12.740 km","1.274 km","127.400 km"],a:0,e:"Dünya'nın çapı yaklaşık 12.740 km'dir."}
 ];
+function pickQ(){
+  var seen=Math.max(maxL,3),el=[],i;
+  for(i=0;i<Q.length;i++)if(Q[i].l<=seen)el.push(i);
+  var fresh=el.filter(function(x){return qUsed.indexOf(x)<0});
+  if(!fresh.length){qUsed=qUsed.filter(function(x){return el.indexOf(x)<0});fresh=el}
+  return fresh[Math.floor(Math.random()*fresh.length)];
+}
 function askQ(){
-  if(qUsed.length>=Q.length)qUsed=[];
-  var idx;do{idx=Math.floor(Math.random()*Q.length)}while(qUsed.indexOf(idx)>=0);
-  qUsed.push(idx);var q=Q[idx],order=[0,1,2],i,j,tmp;
+  var idx=pickQ();qUsed.push(idx);
+  var q=Q[idx],order=[0,1,2],i,j,tmp;
   for(i=2;i>0;i--){j=Math.floor(Math.random()*(i+1));tmp=order[i];order[i]=order[j];order[j]=tmp}
   qCur={q:q,done:false};aiming=false;state='quiz';$('toast').hidden=true;
+  $('qTag').textContent='EĞİTİM SORUSU · '+(q.z===100?'Kolay':q.z===125?'Orta':'Zor')+' (+'+q.z+')';
   $('qText').textContent=q.q;
   var box=$('qOpts');box.innerHTML='';
   order.forEach(function(oi){
@@ -505,12 +676,21 @@ function answerQ(oi){
   if(!qCur||qCur.done)return;qCur.done=true;
   var q=qCur.q,ok=oi===q.a,bs=$('qOpts').children,i;
   for(i=0;i<bs.length;i++){var v=parseInt(bs[i].getAttribute('data-i'),10);if(v===q.a)bs[i].className='btn ok';else if(v===oi)bs[i].className='btn bad'}
-  if(ok){score+=100;$('qRes').innerHTML='<b>Doğru! +100 puan</b><br>'+q.e}
-  else $('qRes').innerHTML='<b>Olmadı. Doğru cevap: '+q.o[q.a]+'</b><br>'+q.e;
-  $('qNext').hidden=false;
+  if(ok){addScore(q.z);$('qRes').innerHTML='<b>Doğru! +'+q.z+' puan</b><br>'+q.e}
+  else{addScore(-25);$('qRes').innerHTML='<b>Olmadı. −25 puan. Doğru cevap: '+q.o[q.a]+'</b><br>'+q.e}
+  saveBoard();$('qNext').hidden=false;
 }
-function closeQ(){$('quiz').hidden=true;eduT=0;lastDrop=t;state='play'}
+function closeQ(){$('quiz').hidden=true;eduT=0;eduNext=nextQTime();lastDrop=t;state='play'}
 function setEduTxt(){$('bEdu').textContent='Eğitim Modu: '+(eduOn?'Açık':'Kapalı')}
+
+function doReset(){
+  try{localStorage.removeItem('gz_board2')}catch(e){}
+  try{sessionStorage.removeItem('gz_sess')}catch(e){}
+  board=[];me=null;removed={};sessName='';boardDirty=false;
+  bodies=[];score=0;maxL=0;parts=[];floats=[];combo=0;danger=0;state='menu';
+  hideAll();$('confirmScr').hidden=true;$('toast').hidden=true;
+  openMenu();showName();
+}
 
 /* ---------- Gezegenler listesi ---------- */
 function buildList(){
@@ -528,7 +708,10 @@ function buildList(){
 /* ---------- Menü ve düğmeler ---------- */
 function openMenu(){
   if(state==='play')state='paused';
-  var bd=parseInt(lsGet('gz_best')||'0',10)||0;
+  saveBoard();
+  $('toast').hidden=true;toastT=0;
+  var bd=parseInt(lsGet('gz_best2')||'0',10)||0;
+  $('whoTxt').textContent=sessName?'Oyuncu: '+sessName:'';
   $('bestTxt').textContent='Rekor: '+bd+'  |  En yüksek: '+P[gzMax].n;
   $('bCont').hidden=state!=='paused';
   $('menu').hidden=false;$('over').hidden=true;
@@ -543,6 +726,13 @@ $('bPres').onclick=function(){sunum=true;newGame('normal')};
 $('bSnd').onclick=function(){setMute(!muted)};
 $('bEdu').onclick=function(){eduOn=!eduOn;lsSet('gz_edu',eduOn?'1':'0');setEduTxt();eduT=0};
 $('qNext').onclick=closeQ;
+$('bBoard').onclick=function(){buildBoard();$('menu').hidden=true;$('board').hidden=false};
+$('boardBack').onclick=function(){$('board').hidden=true;$('menu').hidden=false};
+$('nameOk').onclick=acceptName;
+$('bReset').onclick=function(){$('confirmScr').hidden=false};
+$('rstNo').onclick=function(){$('confirmScr').hidden=true};
+$('rstYes').onclick=doReset;
+$('nameIn').addEventListener('keydown',function(e){if(e.key==='Enter')acceptName()});
 $('bAgain').onclick=function(){newGame(mode)};
 $('bMenu2').onclick=function(){state='menu';$('over').hidden=true;openMenu()};
 setMute(muted);setEduTxt();
@@ -580,8 +770,8 @@ function loop(ts){
   var dt=Math.min((ts-last)/1000||0,1/30);last=ts;
   update(dt);draw();requestAnimationFrame(loop);
 }
-window.__gz={ask:function(){askQ()},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
-openMenu();
+window.__gz={over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y){bodies.push(mk(x,y,l))},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
+openMenu();initSession();
 requestAnimationFrame(loop);
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('./sw.js').catch(function(){});
 })();
