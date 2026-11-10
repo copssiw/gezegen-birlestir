@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#05060f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%234d6bff'/%3E%3Ccircle cx='38' cy='38' r='12' fill='%23c8d6ff'/%3E%3C/svg%3E">
 <title>Gezegen Birleştir</title>
 <link rel="manifest" href="./manifest.json">
 <style>
@@ -11,17 +14,17 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
 html,body{margin:0;height:100%;background:#05060f;color:#e8ecff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:none}
 canvas#c{position:fixed;left:0;top:0;width:100%;height:100%;display:block}
-.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;background:rgba(5,6,15,.88);padding:20px;text-align:center;overflow-y:auto;touch-action:pan-y}
+.screen{position:fixed;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;background:rgba(5,6,15,.88);padding:20px;text-align:center;overflow-y:auto;touch-action:pan-y}
 .screen>:first-child{margin-top:auto}
 .screen>:last-child{margin-bottom:auto}
 #cards{background:rgba(5,6,15,.98)}
 .logo{font-size:38px;font-weight:800;letter-spacing:3px;line-height:1.05;background:linear-gradient(90deg,#8fb4ff,#c79bff,#ffd27a);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:4px}
 .sub{font-size:14px;opacity:.8;min-height:18px}
 .tiny{font-size:12px;opacity:.6;max-width:300px;margin-top:6px}
-.btn{width:min(300px,86vw);padding:14px;border-radius:14px;border:1px solid rgba(160,180,255,.35);background:rgba(40,50,100,.55);color:#e8ecff;font-size:17px;font-weight:600}
+.btn{width:86vw;max-width:300px;padding:14px;border-radius:14px;border:1px solid rgba(160,180,255,.35);background:rgba(40,50,100,.55);color:#e8ecff;font-size:17px;font-weight:600}
 .btn.pri{background:linear-gradient(90deg,#4d6bff,#9a5cff);border-color:transparent}
 .btn:active{transform:scale(.97)}
-#list{width:min(420px,94vw);display:flex;flex-direction:column;gap:8px;text-align:left}
+#list{width:94vw;max-width:420px;display:flex;flex-direction:column;gap:8px;text-align:left}
 .row{display:flex;gap:12px;align-items:center;background:rgba(40,50,100,.4);border-radius:12px;padding:8px 10px}
 .row canvas{width:56px;height:56px;flex:none}
 .row b{font-size:16px}
@@ -30,7 +33,7 @@ canvas#c{position:fixed;left:0;top:0;width:100%;height:100%;display:block}
 .row.lock{opacity:.5}
 h2{margin:6px 0;font-size:24px}
 .big{font-size:44px;font-weight:800}
-#toast{position:fixed;left:50%;top:230px;transform:translateX(-50%);width:min(380px,94vw);background:rgba(20,28,70,.95);border:1px solid rgba(170,190,255,.5);border-radius:14px;padding:10px 14px;font-size:13px;line-height:1.4;pointer-events:none;z-index:5;text-align:left}
+#toast{position:fixed;left:50%;top:230px;transform:translateX(-50%);width:94vw;max-width:380px;background:rgba(20,28,70,.95);border:1px solid rgba(170,190,255,.5);border-radius:14px;padding:10px 14px;font-size:13px;line-height:1.4;pointer-events:none;z-index:5;text-align:left}
 #toast b{font-size:15px;color:#ffd27a}
 </style>
 </head>
@@ -46,7 +49,7 @@ h2{margin:6px 0;font-size:24px}
   <button class="btn" id="bCards">Gezegenler</button>
   <button class="btn" id="bPres">Sunum Modu</button>
   <button class="btn" id="bSnd">Ses: Açık</button>
-  <div class="tiny">Parmağını kaydır, bırakınca gezegen düşer. Aynı iki gezegen çarpışınca bir üst seviyeye birleşir.</div>
+  <div class="tiny">Parmağını kaydır (bilgisayarda fareyi gezdir), bırakınca ya da tıklayınca gezegen düşer. Aynı iki gökcismi çarpışınca bir üst seviyeye birleşir. Sıralama gerçek boyutlara göredir: Ceres'ten Samanyolu'na!</div>
 </div>
 
 <div id="cards" class="screen" hidden>
@@ -68,22 +71,24 @@ h2{margin:6px 0;font-size:24px}
 <script>
 (function(){
 'use strict';
+if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.ellipse){CanvasRenderingContext2D.prototype.ellipse=function(x,y,rx,ry,rot,st,en,ccw){this.save();this.translate(x,y);this.rotate(rot);this.scale(rx,ry);this.arc(0,0,1,st,en,ccw);this.restore()}}
 var W=400,H=720,L=24,R=376,FLOOR=696,LINE=170,SPAWN=110,G=1200,TAU=Math.PI*2;
 
 /* ---------- Gezegen verileri ---------- */
 var P=[
- {n:'Asteroit',r:10,f:'Güneş Sistemi\'nin yapı taşı kaya parçaları. Çoğu Mars ile Jüpiter arasındaki kuşakta döner.'},
- {n:'Ay',r:13,f:'Dünya\'nın tek doğal uydusu. Dünya\'dan yaklaşık 384.000 km uzakta.'},
- {n:'Mars',r:17,f:'Kızıl Gezegen. Yüzeyindeki demir oksit onu kırmızı gösterir. Güneş Sistemi\'nin en büyük yanardağı burada.'},
- {n:'Dünya',r:22,f:'Bildiğimiz tek yaşam yuvası. Yüzeyinin yaklaşık %71\'i su.'},
- {n:'Neptün',r:28,f:'Güneş\'e en uzak gezegen. Rüzgârları saatte 2000 km\'ye yaklaşabilir.'},
- {n:'Jüpiter',r:35,f:'En büyük gezegen, içine 1300\'den fazla Dünya sığar. Büyük Kırmızı Leke dev bir fırtınadır.'},
- {n:'Güneş',r:43,f:'Bir yıldız. Güneş Sistemi\'nin kütlesinin %99\'undan fazlası onda.'},
- {n:'Kara Delik',r:52,f:'Çekimi o kadar güçlü ki ışık bile kaçamaz. Çok büyük yıldızların ömrünün sonunda oluşabilir.'},
- {n:'Solucan Deliği',r:61,h:1,f:'Hayali seviye! Uzayda iki uzak noktayı birbirine bağlayan varsayımsal tünel. Henüz hiç gözlenmedi.'},
- {n:'Kristal Gezegen',r:69,h:1,f:'Hayali seviye! Yüzeyi ışığı kıran dev kristallerle kaplı, hayal ürünü bir dünya.'},
- {n:'Galaksi',r:75,f:'Yüz milyarlarca yıldızın birlikte döndüğü dev yıldız adası. Samanyolu bizim galaksimiz.'},
- {n:'Cennet Evreni',r:80,h:1,f:'Hayali seviye! Her şeyin birleştiği, huzurlu ve ışıl ışıl evren. Hedef burasıydı!'}
+ {n:"Ceres",d:"Çap: ~940 km",r:9,f:"Cüce gezegen. Mars ile Jüpiter arasındaki asteroit kuşağının en büyük cismi. Kuşaktaki tüm cisimlerin toplam kütlesinin yaklaşık üçte birini taşır."},
+ {n:"Ay",d:"Çap: 3.474 km",r:12,f:"Dünya'nın tek doğal uydusu. Dünya'dan ortalama 384.000 km uzakta. Okyanuslardaki gelgitlere çekimiyle o neden olur."},
+ {n:"Merkür",d:"Çap: ~4.880 km",r:15,f:"Güneş'e en yakın ve en küçük gezegen. Güneş'in etrafında bir turu sadece 88 günde atar."},
+ {n:"Mars",d:"Çap: ~6.780 km",r:18,f:"Kızıl Gezegen. Yüzeyindeki demir oksit onu kırmızı gösterir. Olympus Mons, Güneş Sistemi'nin bilinen en büyük yanardağıdır."},
+ {n:"Venüs",d:"Çap: ~12.100 km",r:22,f:"Güneş Sistemi'nin en sıcak gezegeni, yüzeyi yaklaşık 465 °C. Kalın atmosferi ısıyı hapseder. Gezegenlerin çoğunun tersi yönde döner."},
+ {n:"Dünya",d:"Çap: ~12.740 km",r:25,f:"Bildiğimiz tek yaşam yuvası. Yüzeyinin yaklaşık %71'i su ile kaplı."},
+ {n:"Neptün",d:"Çap: ~49.200 km",r:29,f:"Güneş'e en uzak gezegen. Rüzgârları saatte 2000 km'ye yakın hıza ulaşabilir. Güneş'in etrafında bir turu yaklaşık 165 yıl sürer."},
+ {n:"Uranüs",d:"Çap: ~50.700 km",r:33,f:"Neredeyse yan yatmış şekilde döner. Atmosferindeki metan gazı yüzünden turkuaz-mavi görünür. Güneş'in etrafında bir turu yaklaşık 84 yıl sürer."},
+ {n:"Satürn",d:"Çap: ~116.500 km",r:38,f:"Buz ve kaya parçalarından oluşan görkemli halkalarıyla ünlü. Ortalama yoğunluğu sudan azdır; yeterince büyük bir okyanus olsaydı yüzerdi."},
+ {n:"Jüpiter",d:"Çap: ~139.800 km",r:44,f:"En büyük gezegen, içine 1300'den fazla Dünya sığar. Büyük Kırmızı Leke, yüzyıllardır süren dev bir fırtınadır."},
+ {n:"Güneş",d:"Çap: ~1.392.000 km",r:52,f:"Bir yıldız. Güneş Sistemi'nin kütlesinin %99'undan fazlası onda. İçine yaklaşık 1,3 milyon Dünya sığar."},
+ {n:"Betelgeuse",d:"Çap: Güneş'in ~700 katı",r:62,f:"Orion (Avcı) takımyıldızındaki kızıl süperdev yıldız, yaklaşık 600 ışık yılı uzakta. Ömrünün sonuna yaklaşıyor; bir gün süpernova olarak patlaması bekleniyor."},
+ {n:"Samanyolu",d:"Çap: ~100.000 ışık yılı",r:74,f:"Bizim galaksimiz. Yüz milyarlarca yıldız içerir ve Güneş Sistemi bu yıldızlardan biridir. Işık bile bir ucundan öbür ucuna yaklaşık 100.000 yılda gider."}
 ];
 var NL=P.length;
 
@@ -110,7 +115,7 @@ var stars=[];for(var i=0;i<90;i++)stars.push({x:Math.random(),y:Math.random(),s:
 var state='menu',bodies=[],score=0,best=0,bestKey='gz_best',cur=0,nxt=0,aimX=200,aiming=false;
 var lastDrop=-9,t=0,danger=0,combo=0,comboT=-9,maxL=0,mode='normal',sunum=false,botT=1,rng=Math.random;
 var parts=[],floats=[],banner=0,won=false,idc=0,overT=0,newRec=false;
-var gzMax=parseInt(lsGet('gz_max')||'0',10)||0;
+var gzMax=parseInt(lsGet('gz_max2')||'0',10)||0;
 var muted=lsGet('gz_mute')==='1';
 var toastT=0;
 
@@ -177,7 +182,7 @@ function sweep(f1,f2,dur,type,vol){
 }
 function sfxDrop(){sweep(260,90,.14,'sine',.5)}
 function sfxMerge(l,c){
-  if(!AC||muted)return;var n=AC.currentTime,m=58+l*2+Math.min(c-1,4);
+  if(!AC||muted)return;var n=AC.currentTime,m=58+Math.round(l*1.5)+Math.min(c-1,4);
   note(hz(m),n,.4,'triangle',.5,sg);note(hz(m+12),n+.06,.35,'sine',.3,sg);
   if(c>1)note(hz(m+19),n+.12,.3,'sine',.25,sg);
 }
@@ -195,7 +200,7 @@ function doMerge(a,c){
   a.dead=c.dead=true;
   var mx=(a.x+c.x)/2,my=(a.y+c.y)/2;
   if(a.l===NL-1){
-    score+=1000;floats.push({x:mx,y:my,t:1.6,txt:'EVREN PATLAMASI +1000',c:'#ffe27a'});
+    score+=1000;floats.push({x:mx,y:my,t:1.6,txt:'GALAKSİ BİRLEŞMESİ +1000',c:'#ffe27a'});
     burst(mx,my,'#ffe27a',50,260);sfxWin();return;
   }
   var nl=a.l+1,b=mk(mx,my,nl);b.vx=(a.vx+c.vx)/2;b.vy=(a.vy+c.vy)/2;b.touched=true;b.sc=.55;b.a=a.a;
@@ -253,13 +258,13 @@ function drop(){
 }
 function onReach(nl){
   var first=nl>gzMax;
-  if(first){gzMax=nl;lsSet('gz_max',''+nl)}
+  if(first){gzMax=nl;lsSet('gz_max2',''+nl)}
   if(nl>=1&&(first||sunum))showToast(nl);
   if(nl===NL-1&&!won){won=true;banner=5;confetti();sfxWin()}
 }
 function showToast(l){
   var p=P[l],e=$('toast');
-  e.innerHTML='<b>'+p.n+'</b>'+(p.h?' <span style="color:#c79bff">(hayali)</span>':'')+'<br>'+p.f;
+  e.innerHTML='<b>'+p.n+'</b> <span style="color:#9fb4ff;font-size:11px">'+p.d+'</span><br>'+p.f;
   e.style.top=Math.round(oy+250*sc)+'px';
   e.hidden=false;toastT=5.5;sfxCard();
 }
@@ -319,70 +324,70 @@ function drawPlanet(g,x,y,r,l,a,tm){
   g.save();g.translate(x,y);var i,k;
   switch(l){
   case 0:
-    g.save();g.rotate(a);g.beginPath();
-    for(i=0;i<10;i++){var q=r*(.82+.18*Math.sin(i*2.7+1)),an=i/10*TAU;if(i)g.lineTo(Math.cos(an)*q,Math.sin(an)*q);else g.moveTo(q,0)}
-    g.closePath();var gr=g.createRadialGradient(-r*.3,-r*.3,r*.1,0,0,r);gr.addColorStop(0,'#cdb79c');gr.addColorStop(1,'#5a4a3a');g.fillStyle=gr;g.fill();
-    blob(g,r*.25,-r*.2,r*.22,'rgba(0,0,0,.28)');blob(g,-r*.35,r*.25,r*.18,'rgba(0,0,0,.28)');blob(g,r*.1,r*.45,r*.12,'rgba(0,0,0,.28)');
-    g.restore();break;
+    sph(g,r,'#c4bcb0','#4a463f');
+    inside(g,r,a,function(){blob(g,r*.3,-r*.2,r*.2,'rgba(0,0,0,.25)');blob(g,-r*.35,r*.3,r*.16,'rgba(0,0,0,.25)');blob(g,-r*.1,-r*.45,r*.1,'rgba(255,255,255,.9)');blob(g,r*.15,-r*.38,r*.07,'rgba(255,255,255,.85)')});
+    shade(g,r);break;
   case 1:
     sph(g,r,'#f0f0f2','#8a8a96');
     inside(g,r,a,function(){blob(g,r*.3,-r*.25,r*.25,'rgba(0,0,0,.2)');blob(g,-r*.4,r*.2,r*.2,'rgba(0,0,0,.2)');blob(g,r*.15,r*.5,r*.14,'rgba(0,0,0,.2)');blob(g,-r*.1,-r*.55,r*.12,'rgba(0,0,0,.2)')});
     shade(g,r);break;
   case 2:
+    sph(g,r,'#cdbfae','#5a4c40');
+    inside(g,r,a,function(){blob(g,r*.3,-r*.25,r*.22,'rgba(0,0,0,.25)');blob(g,-r*.4,r*.2,r*.18,'rgba(0,0,0,.25)');blob(g,r*.1,r*.5,r*.14,'rgba(0,0,0,.25)');blob(g,-r*.15,-r*.5,r*.12,'rgba(0,0,0,.22)');blob(g,r*.55,r*.1,r*.1,'rgba(0,0,0,.22)')});
+    shade(g,r);break;
+  case 3:
     sph(g,r,'#ff9a6a','#8f2c14');
     inside(g,r,a,function(){blob(g,-r*.3,r*.1,r*.3,'rgba(90,20,5,.35)');blob(g,r*.35,r*.35,r*.2,'rgba(90,20,5,.3)');g.fillStyle='rgba(255,255,255,.85)';g.beginPath();g.ellipse(0,-r*.95,r*.5,r*.25,0,0,TAU);g.fill()});
     shade(g,r);break;
-  case 3:
+  case 4:
+    sph(g,r,'#fff1b8','#b9742a');
+    inside(g,r,a*.2,function(){for(k=0;k<7;k++){g.fillStyle='rgba(255,255,255,'+(k%2?.18:.1)+')';g.beginPath();g.ellipse(0,-r+k*r*.3,r*1.1,r*.12,.15,0,TAU);g.fill()}});
+    shade(g,r);break;
+  case 5:
     sph(g,r,'#6fc0ff','#0c3f9a');
     inside(g,r,a,function(){blob(g,-r*.3,-r*.1,r*.38,'#3fa65a');blob(g,r*.45,r*.3,r*.3,'#3fa65a');blob(g,r*.05,-r*.55,r*.2,'#4fb86a');blob(g,-r*.1,r*.55,r*.18,'#3fa65a');
       g.fillStyle='rgba(255,255,255,.55)';g.beginPath();g.ellipse(r*.2,-r*.2,r*.35,r*.1,.3,0,TAU);g.fill();g.beginPath();g.ellipse(-r*.4,r*.35,r*.3,r*.09,-.2,0,TAU);g.fill()});
     shade(g,r);break;
-  case 4:
+  case 6:
     sph(g,r,'#6f9bff','#1a2f9a');
     inside(g,r,a*.3,function(){for(k=-3;k<=3;k++){g.fillStyle='rgba(180,210,255,'+(k%2?.2:.1)+')';g.fillRect(-r,k*r*.28-r*.08,2*r,r*.16)}blob(g,r*.25,r*.2,r*.2,'rgba(10,20,80,.4)')});
     shade(g,r);break;
-  case 5:
+  case 7:
+    g.save();g.rotate(1.2);g.strokeStyle='rgba(200,240,250,.6)';g.lineWidth=r*.04;g.beginPath();g.ellipse(0,0,r,r*.24,0,Math.PI,TAU);g.stroke();g.restore();
+    sph(g,r*.78,'#d6fbff','#3a9eb0');
+    inside(g,r*.78,a*.2,function(){for(k=-2;k<=2;k++){g.fillStyle='rgba(255,255,255,.12)';g.fillRect(-r,k*r*.25,2*r,r*.1)}});
+    shade(g,r*.78);
+    g.save();g.rotate(1.2);g.strokeStyle='rgba(200,240,250,.8)';g.lineWidth=r*.04;g.beginPath();g.ellipse(0,0,r,r*.24,0,0,Math.PI);g.stroke();g.restore();break;
+  case 8:
+    g.save();g.rotate(-.35);g.strokeStyle='rgba(230,205,150,.9)';g.lineWidth=r*.1;
+    g.beginPath();g.ellipse(0,0,r*.98,r*.3,0,Math.PI,TAU);g.stroke();g.restore();
+    sph(g,r*.62,'#f6e6b4','#a9803d');
+    inside(g,r*.62,a*.2,function(){for(k=0;k<5;k++){g.fillStyle='rgba(150,100,40,.22)';g.fillRect(-r,-r*.62+k*r*.25,2*r,r*.09)}});
+    shade(g,r*.62);
+    g.save();g.rotate(-.35);g.strokeStyle='#ecd9a6';g.lineWidth=r*.1;g.beginPath();g.ellipse(0,0,r*.98,r*.3,0,0,Math.PI);g.stroke();
+    g.strokeStyle='rgba(190,160,100,.8)';g.lineWidth=r*.05;g.beginPath();g.ellipse(0,0,r*.8,r*.24,0,0,Math.PI);g.stroke();g.restore();break;
+  case 9:
     sph(g,r,'#f0d4a8','#9a6a3a');
     inside(g,r,a*.2,function(){var cs=['#c68c5a','#ecd0a4','#b4764a','#f2dcb4','#a8683e'];for(k=0;k<9;k++){g.fillStyle=cs[k%5];g.globalAlpha=.55;g.fillRect(-r,-r+k*r*.23,2*r,r*.15)}g.globalAlpha=1;g.fillStyle='#c4482a';g.beginPath();g.ellipse(r*.3,r*.28,r*.22,r*.12,0,0,TAU);g.fill()});
     shade(g,r);break;
-  case 6:
+  case 10:
     g.shadowColor='#ffb020';g.shadowBlur=r*.7+Math.sin(tm*3)*r*.1;
     sph(g,r*.92,'#fffbd0','#ff8a00');g.shadowBlur=0;
     g.save();g.rotate(tm*.3);g.strokeStyle='rgba(255,200,80,.55)';g.lineWidth=r*.05;
     for(i=0;i<14;i++){g.rotate(TAU/14);g.beginPath();g.moveTo(r*.8,0);g.lineTo(r*(.95+.05*Math.sin(tm*4+i)),0);g.stroke()}
     g.restore();break;
-  case 7:
-    g.save();g.rotate(-.35+Math.sin(tm*.6)*.05);
-    g.shadowColor='#ff8a28';g.shadowBlur=r*.45;g.strokeStyle='#ffa83a';g.lineWidth=r*.16;
-    g.beginPath();g.ellipse(0,0,r*.9,r*.28,0,0,TAU);g.stroke();g.shadowBlur=0;
-    g.fillStyle='#000';g.strokeStyle='#8a4cff';g.lineWidth=r*.04;g.beginPath();g.arc(0,0,r*.56,0,TAU);g.fill();g.stroke();
-    g.strokeStyle='#ffd08a';g.lineWidth=r*.16;g.beginPath();g.ellipse(0,0,r*.9,r*.28,0,.1,Math.PI-.1);g.stroke();
-    g.restore();break;
-  case 8:
-    var gr2=g.createRadialGradient(0,0,0,0,0,r);gr2.addColorStop(0,'#000');gr2.addColorStop(.5,'#3a1a7a');gr2.addColorStop(1,'#a65cff');
-    g.fillStyle=gr2;disc(g,r);g.fill();
-    for(k=0;k<46;k++){var rr=r*k/46,an=k*.5+tm*2;blob(g,Math.cos(an)*rr*.95,Math.sin(an)*rr*.95,r*.035+k*.0008*r,'rgba(190,230,255,.85)')}
-    g.strokeStyle='#7ae8ff';g.lineWidth=r*.05;disc(g,r*.96);g.stroke();break;
-  case 9:
-    sph(g,r,'#c8fbff','#6a3fd0');
-    inside(g,r,a*.4,function(){
-      for(i=0;i<8;i++){var a1=i/8*TAU,a2=(i+1)/8*TAU;g.fillStyle='rgba('+(i%2?'255,140,220':'120,230,255')+',.35)';g.beginPath();g.moveTo(0,0);g.lineTo(Math.cos(a1)*r,Math.sin(a1)*r);g.lineTo(Math.cos(a2)*r,Math.sin(a2)*r);g.closePath();g.fill()}
-      g.strokeStyle='rgba(255,255,255,.6)';g.lineWidth=r*.025;for(i=0;i<8;i++){g.beginPath();g.moveTo(0,0);g.lineTo(Math.cos(i/8*TAU)*r,Math.sin(i/8*TAU)*r);g.stroke()}
-      g.beginPath();g.arc(0,0,r*.5,0,TAU);g.stroke()});
-    shade(g,r);break;
-  case 10:
+  case 11:
+    g.shadowColor='#ff4a1a';g.shadowBlur=r*.6+Math.sin(tm*2)*r*.08;
+    sph(g,r*.92,'#ffc09a','#c42a0a');g.shadowBlur=0;
+    inside(g,r*.92,tm*.15,function(){var q=r*.92;blob(g,-q*.3,-q*.2,q*.32,'rgba(140,20,0,.35)');blob(g,q*.35,q*.25,q*.28,'rgba(255,220,170,.3)');blob(g,q*.1,-q*.55,q*.2,'rgba(255,230,190,.28)');blob(g,-q*.35,q*.4,q*.22,'rgba(140,20,0,.3)')});
+    break;
+  case 12:
     g.fillStyle='#090a2c';disc(g,r);g.fill();
     g.save();g.rotate(tm*.3);
     for(var arm=0;arm<2;arm++)for(k=0;k<46;k++){var an2=k*.2+arm*Math.PI,rd=r*.93*k/46;blob(g,Math.cos(an2)*rd,Math.sin(an2)*rd,r*.07*(1.15-k/55),'rgba(190,210,255,'+(.9-k/70)+')')}
     g.restore();
     var gr3=g.createRadialGradient(0,0,0,0,0,r*.4);gr3.addColorStop(0,'rgba(255,245,200,1)');gr3.addColorStop(1,'rgba(255,200,100,0)');g.fillStyle=gr3;disc(g,r*.4);g.fill();
     g.strokeStyle='#6a7cff';g.lineWidth=r*.03;disc(g,r*.97);g.stroke();break;
-  case 11:
-    g.shadowColor='#fff0a0';g.shadowBlur=r*.5;sph(g,r*.95,'#ffffff','#ffc94a');g.shadowBlur=0;
-    inside(g,r,tm*.4,function(){g.fillStyle='rgba(255,255,255,.4)';for(i=0;i<12;i++){g.rotate(TAU/12);g.beginPath();g.moveTo(0,0);g.lineTo(r,-r*.08);g.lineTo(r,r*.08);g.closePath();g.fill()}});
-    var rc=['#ff6b9a','#ffd45a','#6bd6ff'];g.lineWidth=r*.06;
-    for(i=0;i<3;i++){g.strokeStyle=rc[i];g.globalAlpha=.85;disc(g,r*(.86-i*.12));g.stroke()}
-    g.globalAlpha=1;blob(g,0,0,r*.2,'#fff');break;
   }
   g.restore();
 }
@@ -436,7 +441,7 @@ function draw(){
     g.globalAlpha=clamp(banner,0,1);
     var tg=g.createLinearGradient(80,0,320,0);tg.addColorStop(0,'#ffd27a');tg.addColorStop(.5,'#fff');tg.addColorStop(1,'#ff9ad0');
     g.fillStyle=tg;g.font='800 52px system-ui,sans-serif';g.fillText('BAŞARDIN!',200,330);
-    g.fillStyle='#fff';g.font='600 15px system-ui,sans-serif';g.fillText('Cennet Evreni açıldı. Oynamaya devam!',200,360);g.globalAlpha=1;
+    g.fillStyle='#fff';g.font='600 15px system-ui,sans-serif';g.fillText('Samanyolu açıldı. Oynamaya devam!',200,360);g.globalAlpha=1;
   }
 }
 
@@ -448,7 +453,7 @@ function buildList(){
     var c=document.createElement('canvas');c.width=112;c.height=112;row.appendChild(c);
     if(open){var g=c.getContext('2d');g.translate(56,56);var k=46/P[l].r;g.scale(k,k);drawPlanet(g,0,0,P[l].r,l,.3,0)}
     var d=document.createElement('div');
-    d.innerHTML=open?'<b>'+(l+1)+'. '+P[l].n+'</b>'+(P[l].h?'<i>hayali</i>':'')+'<p>'+P[l].f+'</p>':'<b>'+(l+1)+'. ???</b><p>Henüz keşfedilmedi. Birleştirerek aç!</p>';
+    d.innerHTML=open?'<b>'+(l+1)+'. '+P[l].n+'</b>'+'<i>'+P[l].d+'</i>'+'<p>'+P[l].f+'</p>':'<b>'+(l+1)+'. ???</b><p>Henüz keşfedilmedi. Birleştirerek aç!</p>';
     row.appendChild(d);list.appendChild(row);
   }
 }
@@ -474,18 +479,28 @@ $('bMenu2').onclick=function(){state='menu';$('over').hidden=true;openMenu()};
 setMute(muted);
 
 /* ---------- Girdi ---------- */
-function wx(e){return(e.clientX-ox)/sc}
-function wy(e){return(e.clientY-oy)/sc}
-cv.addEventListener('pointerdown',function(e){
+function pt(e){return (e.changedTouches&&e.changedTouches[0])||(e.touches&&e.touches[0])||e}
+function wx(e){return(pt(e).clientX-ox)/sc}
+function wy(e){return(pt(e).clientY-oy)/sc}
+function onDown(e){
   var x=wx(e),y=wy(e);
   if(sunum){exitSunum();return}
   if(Math.hypot(x-200,y-48)<28){openMenu();return}
-  if(state==='play'){aiming=true;aimX=x;try{cv.setPointerCapture(e.pointerId)}catch(_){}}
-});
-cv.addEventListener('pointermove',function(e){if(state==='play'&&!sunum&&(aiming||e.pointerType==='mouse'))aimX=wx(e)});
-cv.addEventListener('pointerup',function(e){if(aiming){aiming=false;aimX=wx(e);drop()}});
-cv.addEventListener('pointercancel',function(){aiming=false});
+  if(state==='play'){aiming=true;aimX=x;if(e.pointerId!=null){try{cv.setPointerCapture(e.pointerId)}catch(_){}}}
+}
+function onMove(e){if(state==='play'&&!sunum&&(aiming||e.pointerType==='mouse'||e.type==='mousemove'))aimX=wx(e)}
+function onUp(e){if(aiming){aiming=false;aimX=wx(e);drop()}}
+if(window.PointerEvent){
+  cv.addEventListener('pointerdown',onDown);cv.addEventListener('pointermove',onMove);
+  cv.addEventListener('pointerup',onUp);cv.addEventListener('pointercancel',function(){aiming=false});
+}else{
+  cv.addEventListener('touchstart',function(e){e.preventDefault();onDown(e)},{passive:false});
+  cv.addEventListener('touchmove',function(e){e.preventDefault();onMove(e)},{passive:false});
+  cv.addEventListener('touchend',function(e){e.preventDefault();onUp(e)},{passive:false});
+  cv.addEventListener('mousedown',onDown);window.addEventListener('mousemove',onMove);window.addEventListener('mouseup',onUp);
+}
 window.addEventListener('keydown',function(e){
+  if((e.key==='Escape'||e.key==='p'||e.key==='P')&&state==='play'&&!sunum){openMenu();return}
   if(state!=='play'||sunum)return;
   if(e.key==='ArrowLeft')aimX-=14;else if(e.key==='ArrowRight')aimX+=14;else if(e.key===' '||e.key==='ArrowDown'){drop();e.preventDefault()}
 });
