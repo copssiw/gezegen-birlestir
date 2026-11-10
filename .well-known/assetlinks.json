@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.netlify.gezegen_birlestir.twa",
+        "sha256_cert_fingerprints": ["7D:8A:8D:A2:CF:30:0C:D6:58:D4:E0:20:7D:CA:F4:A4:5F:F7:FC:D9:41:C7:D1:18:04:8F:93:8D:7C:0C:5B:85"]
+      }
+    }]
