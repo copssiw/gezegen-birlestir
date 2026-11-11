@@ -35,6 +35,10 @@ h2{margin:6px 0;font-size:24px}
 .big{font-size:44px;font-weight:800}
 #toast{position:fixed;left:50%;top:230px;transform:translateX(-50%);width:94vw;max-width:380px;background:rgba(20,28,70,.95);border:1px solid rgba(170,190,255,.5);border-radius:14px;padding:10px 14px;font-size:13px;line-height:1.4;pointer-events:none;z-index:5;text-align:left}
 #toast b{font-size:15px;color:#ffd27a}
+#toast.info{top:auto!important;bottom:14px;width:94vw;max-width:440px;padding:16px 18px;font-size:17px;line-height:1.5;pointer-events:auto;box-shadow:0 0 0 9999px rgba(3,5,15,.55)}
+#toast.info b{font-size:22px}
+#toast.info .d{display:block;color:#9fb4ff;font-size:14px;margin:2px 0 8px}
+#toast.info .btn{display:block;width:100%;max-width:none;margin:14px 0 0;font-size:18px;padding:12px}
 .btn.ok{background:#1f8a4c;border-color:#3fd07a}
 .btn.bad{background:#8a2a2a;border-color:#e06a6a}
 #quiz{background:rgba(5,6,15,.96);z-index:6}
@@ -76,10 +80,13 @@ h2{margin:6px 0;font-size:24px}
 </div>
 
 <div id="over" class="screen" hidden>
-  <h2>Kap doldu!</h2>
+  <h2>Elendin!</h2>
+  <div class="sub">Üst sınırı aştın. Son puanın:</div>
   <div class="big" id="oScore">0</div>
+  <div class="sub" id="oTime"></div>
   <div class="sub" id="oInfo"></div>
-  <button class="btn pri" id="bAgain">Tekrar Oyna</button>
+  <div class="tiny" style="margin-top:0">Puan sıfırlandı, yeni oyunda 0'dan başlarsın.</div>
+  <button class="btn pri" id="bAgain">Yeniden Dene</button>
   <button class="btn" id="bMenu2">Menü</button>
 </div>
 
@@ -120,7 +127,7 @@ h2{margin:6px 0;font-size:24px}
 (function(){
 'use strict';
 if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.ellipse){CanvasRenderingContext2D.prototype.ellipse=function(x,y,rx,ry,rot,st,en,ccw){this.save();this.translate(x,y);this.rotate(rot);this.scale(rx,ry);this.arc(0,0,1,st,en,ccw);this.restore()}}
-var W=400,H=720,L=24,R=376,FLOOR=696,LINE=170,SPAWN=110,G=1200,TAU=Math.PI*2;
+var W=400,H=720,L=24,R=376,FLOOR=696,LINE=250,SPAWN=110,G=1200,TAU=Math.PI*2;
 
 /* ---------- Gezegen verileri ---------- */
 var P=[
@@ -138,6 +145,7 @@ var P=[
  {n:"Betelgeuse",d:"Çap: Güneş'in ~700 katı",r:62,f:"Orion (Avcı) takımyıldızındaki kızıl süperdev yıldız, yaklaşık 600 ışık yılı uzakta. Ömrünün sonuna yaklaşıyor; bir gün süpernova olarak patlaması bekleniyor."},
  {n:"Samanyolu",d:"Çap: ~100.000 ışık yılı",r:74,f:"Bizim galaksimiz. Yüz milyarlarca yıldız içerir ve Güneş Sistemi bu yıldızlardan biridir. Işık bile bir ucundan öbür ucuna yaklaşık 100.000 yılda gider."}
 ];
+var RS=1.5625;P.forEach(function(p){p.r=p.r*RS});
 var NL=P.length;
 
 /* ---------- Yardımcılar ---------- */
@@ -165,7 +173,7 @@ var lastDrop=-9,t=0,danger=0,combo=0,comboT=-9,maxL=0,mode='normal',sunum=false,
 var parts=[],floats=[],banner=0,won=false,idc=0,overT=0,newRec=false;
 var gzMax=parseInt(lsGet('gz_max2')||'0',10)||0;
 var muted=lsGet('gz_mute')==='1';
-var toastT=0;
+var toastT=0,playT=0;
 
 function pick(){var r=rng();return r<.4?0:r<.7?1:r<.9?2:3}
 function mk(x,y,l){var r=P[l].r;return{id:++idc,x:x,y:y,vx:0,vy:0,l:l,r:r,im:1/(r*r),a:Math.random()*TAU,age:0,touched:false,sc:1,dead:false}}
@@ -174,7 +182,7 @@ function newGame(m){
   mode=m;rng=m==='daily'?mulberry32(parseInt(dateStr(),10)):Math.random;
   bodies=[];score=0;combo=0;danger=0;maxL=0;won=false;banner=0;parts=[];floats=[];newRec=false;overT=0;
   bestKey=m==='daily'?'gz_bd2_'+dateStr():'gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
-  cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();
+  cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=0;
   hideAll();
 }
 function hideAll(){$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true;$('quiz').hidden=true;$('board').hidden=true}
@@ -313,17 +321,32 @@ function onReach(nl,fx,fy){
 }
 function showToast(l){
   var p=P[l],e=$('toast');
-  e.innerHTML='<b>'+p.n+'</b> <span style="color:#9fb4ff;font-size:11px">'+p.d+'</span><br>'+p.f;
-  e.style.top=Math.round(oy+250*sc)+'px';
-  e.hidden=false;toastT=5.5;sfxCard();
+  if(sunum){
+    e.className='';
+    e.innerHTML='<b>'+p.n+'</b> <span style="color:#9fb4ff;font-size:11px">'+p.d+'</span><br>'+p.f;
+    e.style.top=Math.round(oy+250*sc)+'px';
+    e.hidden=false;toastT=5.5;sfxCard();return;
+  }
+  e.className='info';e.style.top='';
+  e.innerHTML='<b>'+p.n+'</b><span class="d">'+p.d+'</span>'+p.f+'<button class="btn pri" id="infoClose">Kapat</button>';
+  $('infoClose').onclick=closeInfo;
+  e.hidden=false;toastT=0;aiming=false;state='info';sfxCard();
 }
+function closeInfo(){
+  if(state!=='info')return;
+  $('toast').hidden=true;$('toast').className='';state='play';lastDrop=t;
+}
+function fmtT(x){x=Math.floor(x);var m=Math.floor(x/60),y=x%60;return m+':'+(y<10?'0':'')+y}
 function gameOver(){
   state='over';sfxOver();saveBoard();
   if(!sunum){
-    if(score>best){best=score;lsSet(bestKey,''+best);newRec=true}
-    $('oScore').textContent=score;
-    $('oInfo').textContent=(newRec?'Yeni rekor! ':'Rekor: '+best+'. ')+'En yüksek seviye: '+P[maxL].n+(mode==='daily'?' (Günlük)':'');
+    var fs=score;
+    if(fs>best){best=fs;lsSet(bestKey,''+best);newRec=true}
+    $('oScore').textContent=fs;
+    $('oTime').textContent='Oynama süresi: '+fmtT(playT);
+    $('oInfo').textContent=(newRec?'Yeni rekor! ':'Rekor: '+best+'. ')+'En yüksek gezegen: '+P[maxL].n+(mode==='daily'?' (Günlük)':'');
     $('over').hidden=false;
+    score=0;
   }
   overT=0;
 }
@@ -345,11 +368,12 @@ function update(dt){
   if(comboT>0&&t-comboT>1.3)combo=0;
   if(state==='play'){
     if(sunum)bot(dt);
+    playT+=dt;
     physics(dt);
     var dg=false;
     for(i=0;i<bodies.length;i++){var b=bodies[i];if(b.touched&&b.age>.6&&b.y-b.r<LINE){dg=true;break}}
     if(dg)danger+=dt;else danger=Math.max(0,danger-dt*2);
-    if(danger>2.2)gameOver();
+    if(danger>.6)gameOver();
     if(state==='play'&&eduOn&&!sunum){eduT+=dt;if(eduT>=eduNext)askQ()}
   }else if(state==='over'&&sunum){
     overT+=dt;if(overT>3)newGame('normal');
@@ -465,7 +489,7 @@ function draw(){
   // gezegenler
   for(i=0;i<bodies.length;i++){var b=bodies[i];drawPlanet(g,b.x,b.y,b.r*b.sc,b.l,b.a,t)}
   // bekleyen gezegen
-  if(state==='play'||state==='paused'||state==='quiz'){
+  if(state==='play'||state==='paused'||state==='quiz'||state==='info'){
     var rdy=t-lastDrop>=.45,rr=P[cur].r,x2=clamp(sunum?aimX:aimX,L+rr+1,R-rr-1);
     g.globalAlpha=rdy?.95:.25;drawPlanet(g,x2,SPAWN,rr,cur,0,t);g.globalAlpha=1;
   }
@@ -509,7 +533,7 @@ function loadBoard(){
     var n=e.n.replace(/\s+/g,' ').trim().slice(0,14);if(n.length<1)return;
     var k=nk(n),sc2=isFinite(+e.s)?Math.max(0,Math.floor(+e.s)):0;
     if(seen[k]){if(seen[k].s<sc2)seen[k].s=sc2;return}
-    var o={n:n,s:sc2,d:isFinite(+e.d)&&+e.d>0?+e.d:Date.now(),g:(e.g&&typeof e.g==='object'&&Array.isArray(e.g.b))?e.g:null};
+    var o={n:n,s:sc2,d:isFinite(+e.d)&&+e.d>0?+e.d:Date.now(),g:(e.g&&typeof e.g==='object'&&Array.isArray(e.g.b)&&e.g.v===2)?e.g:null};
     seen[k]=o;out.push(o);
   });
   return out;
@@ -518,9 +542,9 @@ var board=loadBoard(),me=null,boardDirty=false,lastSave=0,sessName='',removed={}
 function snap(){
   if(!me||sunum)return;
   if(state==='over'){me.g=null;return}
-  if(state!=='play'&&state!=='paused'&&state!=='quiz')return;
+  if(state!=='play'&&state!=='paused'&&state!=='quiz'&&state!=='info')return;
   var r=function(v){return Math.round(v*10)/10};
-  me.g={mo:mode,s:score,c:cur,n:nxt,ml:maxL,w:won?1:0,b:bodies.map(function(o){return{x:r(o.x),y:r(o.y),vx:r(o.vx),vy:r(o.vy),l:o.l,a:r(o.a),t:o.touched?1:0}})};
+  me.g={v:2,pt:Math.floor(playT),mo:mode,s:score,c:cur,n:nxt,ml:maxL,w:won?1:0,b:bodies.map(function(o){return{x:r(o.x),y:r(o.y),vx:r(o.vx),vy:r(o.vy),l:o.l,a:r(o.a),t:o.touched?1:0}})};
 }
 function syncBoard(){
   var stored=loadBoard(),out=[],seen={},mk2=me?nk(me.n):null;
@@ -551,7 +575,7 @@ function loadGame(g){
     cur=(g.c>=0&&g.c<NL&&g.c===Math.floor(g.c))?g.c:pick();nxt=(g.n>=0&&g.n<NL&&g.n===Math.floor(g.n))?g.n:pick();
     maxL=Math.max(0,Math.min(NL-1,Math.floor(+g.ml||0)));won=!!g.w;combo=0;danger=0;banner=0;parts=[];floats=[];newRec=false;overT=0;
     bestKey=mode==='daily'?'gz_bd2_'+dateStr():'gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
-    lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();hideAll();return true;
+    lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=Math.max(0,Math.floor(+g.pt||0));hideAll();return true;
   }catch(err){return false}
 }
 function playAs(e){
@@ -598,7 +622,7 @@ function buildBoard(){
     var mid=document.createElement('div');mid.style.flex='1';
     var nm=document.createElement('b');nm.textContent=e.n+(e===me?' (sen)':'');
     var dt=document.createElement('p');
-    var live=(e===me&&!sunum&&(state==='paused'||state==='play'||state==='quiz'))?' · şu an: '+score:'';
+    var live=(e===me&&!sunum&&(state==='paused'||state==='play'||state==='quiz'||state==='info'))?' · şu an: '+score:'';
     dt.textContent=new Date(e.d).toLocaleDateString('tr-TR')+live;
     mid.appendChild(nm);mid.appendChild(dt);
     var sc2=document.createElement('b');sc2.textContent=e.s;sc2.style.color='#ffd27a';
@@ -707,9 +731,9 @@ function buildList(){
 
 /* ---------- Menü ve düğmeler ---------- */
 function openMenu(){
-  if(state==='play')state='paused';
+  if(state==='play'||state==='info')state='paused';
   saveBoard();
-  $('toast').hidden=true;toastT=0;
+  $('toast').hidden=true;$('toast').className='';toastT=0;
   var bd=parseInt(lsGet('gz_best2')||'0',10)||0;
   $('whoTxt').textContent=sessName?'Oyuncu: '+sessName:'';
   $('bestTxt').textContent='Rekor: '+bd+'  |  En yüksek: '+P[gzMax].n;
@@ -759,6 +783,7 @@ if(window.PointerEvent){
   cv.addEventListener('mousedown',onDown);window.addEventListener('mousemove',onMove);window.addEventListener('mouseup',onUp);
 }
 window.addEventListener('keydown',function(e){
+  if(state==='info'&&(e.key==='Escape'||e.key==='Enter'||e.key===' ')){closeInfo();return}
   if((e.key==='Escape'||e.key==='p'||e.key==='P')&&state==='play'&&!sunum){openMenu();return}
   if(state!=='play'||sunum)return;
   if(e.key==='ArrowLeft')aimX-=14;else if(e.key==='ArrowRight')aimX+=14;else if(e.key===' '||e.key==='ArrowDown'){drop();e.preventDefault()}
@@ -770,7 +795,7 @@ function loop(ts){
   var dt=Math.min((ts-last)/1000||0,1/30);last=ts;
   update(dt);draw();requestAnimationFrame(loop);
 }
-window.__gz={over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y){bodies.push(mk(x,y,l))},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
+window.__gz={radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
 openMenu();initSession();
 requestAnimationFrame(loop);
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('./sw.js').catch(function(){});
