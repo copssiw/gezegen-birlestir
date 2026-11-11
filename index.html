@@ -131,19 +131,19 @@ var W=400,H=720,L=24,R=376,FLOOR=696,LINE=250,SPAWN=110,G=1200,TAU=Math.PI*2;
 
 /* ---------- Gezegen verileri ---------- */
 var P=[
- {n:"Ceres",d:"Çap: ~940 km",r:9,f:"Cüce gezegen. Mars ile Jüpiter arasındaki asteroit kuşağının en büyük cismi. Kuşaktaki tüm cisimlerin toplam kütlesinin yaklaşık üçte birini taşır."},
- {n:"Ay",d:"Çap: 3.474 km",r:12,f:"Dünya'nın tek doğal uydusu. Dünya'dan ortalama 384.000 km uzakta. Okyanuslardaki gelgitlere çekimiyle o neden olur."},
- {n:"Merkür",d:"Çap: ~4.880 km",r:15,f:"Güneş'e en yakın ve en küçük gezegen. Güneş'in etrafında bir turu sadece 88 günde atar."},
- {n:"Mars",d:"Çap: ~6.780 km",r:18,f:"Kızıl Gezegen. Yüzeyindeki demir oksit onu kırmızı gösterir. Olympus Mons, Güneş Sistemi'nin bilinen en büyük yanardağıdır."},
- {n:"Venüs",d:"Çap: ~12.100 km",r:22,f:"Güneş Sistemi'nin en sıcak gezegeni, yüzeyi yaklaşık 465 °C. Kalın atmosferi ısıyı hapseder. Gezegenlerin çoğunun tersi yönde döner."},
- {n:"Dünya",d:"Çap: ~12.740 km",r:25,f:"Bildiğimiz tek yaşam yuvası. Yüzeyinin yaklaşık %71'i su ile kaplı."},
- {n:"Neptün",d:"Çap: ~49.200 km",r:29,f:"Güneş'e en uzak gezegen. Rüzgârları saatte 2000 km'ye yakın hıza ulaşabilir. Güneş'in etrafında bir turu yaklaşık 165 yıl sürer."},
- {n:"Uranüs",d:"Çap: ~50.700 km",r:33,f:"Neredeyse yan yatmış şekilde döner. Atmosferindeki metan gazı yüzünden turkuaz-mavi görünür. Güneş'in etrafında bir turu yaklaşık 84 yıl sürer."},
- {n:"Satürn",d:"Çap: ~116.500 km",r:38,f:"Buz ve kaya parçalarından oluşan görkemli halkalarıyla ünlü. Ortalama yoğunluğu sudan azdır; yeterince büyük bir okyanus olsaydı yüzerdi."},
- {n:"Jüpiter",d:"Çap: ~139.800 km",r:44,f:"En büyük gezegen, içine 1300'den fazla Dünya sığar. Büyük Kırmızı Leke, yüzyıllardır süren dev bir fırtınadır."},
- {n:"Güneş",d:"Çap: ~1.392.000 km",r:52,f:"Bir yıldız. Güneş Sistemi'nin kütlesinin %99'undan fazlası onda. İçine yaklaşık 1,3 milyon Dünya sığar."},
- {n:"Betelgeuse",d:"Çap: Güneş'in ~700 katı",r:62,f:"Orion (Avcı) takımyıldızındaki kızıl süperdev yıldız, yaklaşık 600 ışık yılı uzakta. Ömrünün sonuna yaklaşıyor; bir gün süpernova olarak patlaması bekleniyor."},
- {n:"Samanyolu",d:"Çap: ~100.000 ışık yılı",r:74,f:"Bizim galaksimiz. Yüz milyarlarca yıldız içerir ve Güneş Sistemi bu yıldızlardan biridir. Işık bile bir ucundan öbür ucuna yaklaşık 100.000 yılda gider."}
+ {n:"Ceres",d:"Çap: ~940 km",r:9,f:["Cüce gezegen. Mars ile Jüpiter arasındaki asteroit kuşağının en büyük cismi.", "Kuşaktaki tüm cisimlerin toplam kütlesinin yaklaşık üçte birini taşır. Çapı yaklaşık 940 km'dir."]},
+ {n:"Ay",d:"Çap: 3.474 km",r:12,f:["Dünya'nın tek doğal uydusu. Dünya'dan ortalama 384.000 km uzakta.", "Çekimiyle okyanuslardaki gelgitlere neden olur. Dünya'nın çevresinde bir turunu yaklaşık 27 günde tamamlar."]},
+ {n:"Merkür",d:"Çap: ~4.880 km",r:15,f:["Güneş'e en yakın ve en küçük gezegen.", "Güneş'in etrafında bir turu sadece 88 günde atar. Yüzeyi Ay'a benzer şekilde kraterlerle doludur."]},
+ {n:"Mars",d:"Çap: ~6.780 km",r:18,f:["Kızıl Gezegen. Yüzeyindeki demir oksit (pas) onu kırmızı gösterir.", "Olympus Mons, Güneş Sistemi'nin bilinen en büyük yanardağıdır. Mars'ın Phobos ve Deimos adlı iki küçük uydusu vardır."]},
+ {n:"Venüs",d:"Çap: ~12.100 km",r:22,f:["Güneş Sistemi'nin en sıcak gezegeni, yüzeyi yaklaşık 465 °C. Kalın atmosferi ısıyı hapseder.", "Gezegenlerin çoğunun tersi yönde döner. Boyutu Dünya'ya çok benzediği için ona Dünya'nın ikizi de denir."]},
+ {n:"Dünya",d:"Çap: ~12.740 km",r:25,f:["Bildiğimiz tek yaşam yuvası. Yüzeyinin yaklaşık %71'i su ile kaplı.", "Çapı yaklaşık 12.740 km'dir. Güneş'in etrafında bir turu 365 gün sürer."]},
+ {n:"Neptün",d:"Çap: ~49.200 km",r:29,f:["Güneş'e en uzak gezegen. Rüzgârları saatte 2000 km'ye yakın hıza ulaşabilir.", "Güneş'in etrafında bir turu yaklaşık 165 yıl sürer. Çıplak gözle görülemez; 1846'da önce hesaplanıp sonra teleskopla bulundu."]},
+ {n:"Uranüs",d:"Çap: ~50.700 km",r:33,f:["Neredeyse yan yatmış şekilde döner. Dönme ekseni yaklaşık 98° eğiktir.", "Atmosferindeki metan gazı yüzünden turkuaz-mavi görünür. Güneş'in etrafında bir turu yaklaşık 84 yıl sürer."]},
+ {n:"Satürn",d:"Çap: ~116.500 km",r:38,f:["Buz ve kaya parçalarından oluşan görkemli halkalarıyla ünlü.", "Ortalama yoğunluğu sudan azdır; yeterince büyük bir okyanus olsaydı yüzerdi."]},
+ {n:"Jüpiter",d:"Çap: ~139.800 km",r:44,f:["En büyük gezegen, içine 1300'den fazla Dünya sığar.", "Büyük Kırmızı Leke, yüzyıllardır süren dev bir fırtınadır."]},
+ {n:"Güneş",d:"Çap: ~1.392.000 km",r:52,f:["Bir yıldız. Güneş Sistemi'nin kütlesinin %99'undan fazlası onda.", "İçine yaklaşık 1,3 milyon Dünya sığar. Güneş Sistemi'nin merkezindedir ve gezegenler onun çevresinde döner."]},
+ {n:"Betelgeuse",d:"Çap: Güneş'in ~700 katı",r:62,f:["Orion (Avcı) takımyıldızındaki kızıl süperdev yıldız.", "Dünya'dan yaklaşık 600 ışık yılı uzakta. Ömrünün sonuna yaklaşıyor; bir gün süpernova olarak patlaması bekleniyor."]},
+ {n:"Samanyolu",d:"Çap: ~100.000 ışık yılı",r:74,f:["Bizim galaksimiz. Yüz milyarlarca yıldız içerir.", "Güneş, içindeki yıldızlardan sadece biridir. Işık bile bir ucundan öbür ucuna yaklaşık 100.000 yılda gider."]}
 ];
 var RS=1.5625;P.forEach(function(p){p.r=p.r*RS});
 var NL=P.length;
@@ -172,6 +172,7 @@ var state='menu',bodies=[],score=0,best=0,bestKey='gz_best2',cur=0,nxt=0,aimX=20
 var lastDrop=-9,t=0,danger=0,combo=0,comboT=-9,maxL=0,mode='normal',sunum=false,botT=1,rng=Math.random;
 var parts=[],floats=[],banner=0,won=false,idc=0,overT=0,newRec=false;
 var gzMax=parseInt(lsGet('gz_max2')||'0',10)||0;
+var seenD=(function(){try{var a=JSON.parse(lsGet('gz_seen2')||'[]');return Array.isArray(a)?a.filter(function(x){return typeof x==='string'&&/^\d+:[01]$/.test(x)}):[]}catch(e){return[]}})();
 var muted=lsGet('gz_mute')==='1';
 var toastT=0,playT=0;
 
@@ -316,19 +317,23 @@ function onReach(nl,fx,fy){
   var bonus=100+50*(nl-1);addScore(bonus);floats.push({x:fx,y:fy,t:1.8,txt:'+'+bonus+' '+P[nl].n,c:'#7af0a0'});
   var first=nl>gzMax;
   if(first){gzMax=nl;lsSet('gz_max2',''+nl)}
-  if(nl>=1&&(first||sunum))showToast(nl);
+  if(nl>=1){
+    var un=[0,1].filter(function(v){return seenD.indexOf(nl+':'+v)<0});
+    if(sunum)showToast(nl,Math.floor(Math.random()*2));
+    else if(un.length){var v2=un[Math.floor(Math.random()*un.length)];seenD.push(nl+':'+v2);lsSet('gz_seen2',JSON.stringify(seenD));showToast(nl,v2)}
+  }
   if(nl===NL-1&&!won){won=true;banner=5;confetti();sfxWin()}
 }
-function showToast(l){
-  var p=P[l],e=$('toast');
+function showToast(l,v){
+  var p=P[l],e=$('toast'),ft=p.f[v];
   if(sunum){
     e.className='';
-    e.innerHTML='<b>'+p.n+'</b> <span style="color:#9fb4ff;font-size:11px">'+p.d+'</span><br>'+p.f;
+    e.innerHTML='<b>'+p.n+'</b> <span style="color:#9fb4ff;font-size:11px">'+p.d+'</span><br>'+ft;
     e.style.top=Math.round(oy+250*sc)+'px';
     e.hidden=false;toastT=5.5;sfxCard();return;
   }
   e.className='info';e.style.top='';
-  e.innerHTML='<b>'+p.n+'</b><span class="d">'+p.d+'</span>'+p.f+'<button class="btn pri" id="infoClose">Kapat</button>';
+  e.innerHTML='<b>'+p.n+'</b><span class="d">'+p.d+'</span>'+ft+'<button class="btn pri" id="infoClose">Kapat</button>';
   $('infoClose').onclick=closeInfo;
   e.hidden=false;toastT=0;aiming=false;state='info';sfxCard();
 }
@@ -645,45 +650,55 @@ function nextQTime(){return 45+Math.random()*45}
 var eduOn=lsGet('gz_edu')!=='0',eduT=0,eduNext=nextQTime(),qUsed=[],qCur=null;
 /* l: sorunun ilgili olduğu gezegen seviyesi, z: puan (zorluk) */
 var Q=[
- {l:9,z:100,q:"Güneş Sistemi'nin en büyük gezegeni hangisidir?",o:["Jüpiter","Satürn","Neptün"],a:0,e:"Jüpiter'in içine 1300'den fazla Dünya sığar."},
- {l:2,z:100,q:"Güneş'e en yakın gezegen hangisidir?",o:["Merkür","Venüs","Mars"],a:0,e:"Merkür Güneş'in etrafında bir turu sadece 88 günde atar."},
- {l:4,z:125,q:"Güneş Sistemi'nin en sıcak gezegeni hangisidir?",o:["Venüs","Merkür","Mars"],a:0,e:"Venüs'ün kalın atmosferi ısıyı hapseder; yüzeyi yaklaşık 465 °C'dir. Güneş'e daha yakın olan Merkür'den bile sıcaktır."},
- {l:3,z:100,q:"Hangi gezegene \"Kızıl Gezegen\" denir?",o:["Mars","Jüpiter","Venüs"],a:0,e:"Mars'ın yüzeyindeki demir oksit (pas) onu kırmızı gösterir."},
- {l:5,z:100,q:"Dünya yüzeyinin yaklaşık yüzde kaçı sudur?",o:["%71","%30","%50"],a:0,e:"Dünya'nın yüzeyinin yaklaşık %71'i su ile kaplıdır."},
- {l:8,z:100,q:"Hangi gezegen en görkemli halkalarıyla ünlüdür?",o:["Satürn","Mars","Merkür"],a:0,e:"Satürn'ün halkaları buz ve kaya parçalarından oluşur."},
- {l:7,z:125,q:"Hangi gezegen neredeyse yan yatmış şekilde döner?",o:["Uranüs","Dünya","Mars"],a:0,e:"Uranüs'ün dönme ekseni yaklaşık 98° eğiktir, bu yüzden yan yatmış gibi döner."},
- {l:10,z:100,q:"Güneş nedir?",o:["Bir yıldız","Bir gezegen","Bir uydu"],a:0,e:"Güneş bir yıldızdır; Güneş Sistemi'nin kütlesinin %99'undan fazlası onda toplanmıştır."},
- {l:1,z:125,q:"Ay, Dünya'dan ortalama ne kadar uzaktadır?",o:["384.000 km","38.400 km","3.840.000 km"],a:0,e:"Ay'ın Dünya'ya ortalama uzaklığı yaklaşık 384.000 km'dir."},
- {l:3,z:125,q:"Olympus Mons, Güneş Sistemi'nin bilinen en büyük yanardağıdır. Hangi gezegendedir?",o:["Mars","Venüs","Dünya"],a:0,e:"Olympus Mons Mars'tadır."},
- {l:0,z:125,q:"Ceres hangi tür gök cismidir?",o:["Cüce gezegen","Yıldız","Uydu"],a:0,e:"Ceres, Mars ile Jüpiter arasındaki asteroit kuşağındaki cüce gezegendir."},
- {l:12,z:100,q:"Samanyolu nedir?",o:["Bizim galaksimiz","Bir yıldız","Bir gezegen"],a:0,e:"Samanyolu yüz milyarlarca yıldızdan oluşan galaksimizdir; Güneş Sistemi içindedir."},
- {l:11,z:150,q:"Betelgeuse hangi takımyıldızındadır?",o:["Orion (Avcı)","Akrep","Büyükayı"],a:0,e:"Betelgeuse, Orion takımyıldızındaki kızıl süperdev bir yıldızdır."},
- {l:6,z:150,q:"Neptün'ün Güneş'in etrafında bir turu yaklaşık kaç yıl sürer?",o:["165 yıl","12 yıl","84 yıl"],a:0,e:"Neptün çok uzakta olduğu için bir turu yaklaşık 165 yıl sürer. (84 yıl Uranüs'ündür.)"},
- {l:2,z:125,q:"Merkür'ün bir yılı (Güneş etrafında bir turu) kaç gün sürer?",o:["88 gün","365 gün","225 gün"],a:0,e:"Merkür Güneş'e çok yakın olduğu için bir turu 88 günde tamamlar."},
- {l:9,z:125,q:"Jüpiter'in içine yaklaşık kaç Dünya sığar?",o:["1300'den fazla","13","130"],a:0,e:"Jüpiter o kadar büyüktür ki içine 1300'den fazla Dünya sığar."},
- {l:10,z:125,q:"Güneş Sistemi'nin kütlesinin %99'undan fazlasını hangisi taşır?",o:["Güneş","Jüpiter","Dünya"],a:0,e:"Güneş, Güneş Sistemi'nin kütlesinin %99'undan fazlasını taşır."},
- {l:8,z:150,q:"Satürn'ün yoğunluğu sudan azdır. Yeterince büyük bir okyanusa konsaydı ne olurdu?",o:["Yüzerdi","Batardı","Erirdi"],a:0,e:"Satürn'ün ortalama yoğunluğu sudan düşük olduğu için yüzerdi."},
- {l:4,z:150,q:"Venüs'ün dönüş yönü nasıldır?",o:["Çoğu gezegenin tersi yönde","Çoğu gezegenle aynı yönde","Hiç dönmez"],a:0,e:"Venüs, çoğu gezegenin tersi yönde döner."},
- {l:7,z:150,q:"Uranüs turkuaz-mavi renkte görünür. Bunun nedeni nedir?",o:["Atmosferindeki metan gazı","Okyanusları","Demir oksit"],a:0,e:"Uranüs'ün atmosferindeki metan, kırmızı ışığı soğurduğu için mavi-yeşil görünür."},
- {l:12,z:150,q:"Işık, Samanyolu'nun bir ucundan öbür ucuna yaklaşık kaç yılda gider?",o:["100.000 yıl","1.000 yıl","1 milyon yıl"],a:0,e:"Samanyolu'nun çapı yaklaşık 100.000 ışık yılıdır."},
- {l:6,z:100,q:"Hangisi Güneş'e en uzak gezegendir?",o:["Neptün","Satürn","Uranüs"],a:0,e:"Neptün, Güneş'e en uzak gezegendir; rüzgârları saatte 2000 km'ye yakın hıza ulaşabilir."},
- {l:1,z:100,q:"Dünya'nın kaç doğal uydusu vardır?",o:["1","2","8"],a:0,e:"Dünya'nın tek doğal uydusu Ay'dır."},
- {l:1,z:125,q:"Okyanuslardaki gelgitlere en çok hangisi neden olur?",o:["Ay","Mars","Venüs"],a:0,e:"Ay'ın çekimi gelgitlere neden olur; Güneş'in etkisi daha azdır."},
- {l:2,z:100,q:"Güneş Sistemi'nin en küçük gezegeni hangisidir?",o:["Merkür","Mars","Venüs"],a:0,e:"Merkür, Güneş Sistemi'nin en küçük gezegenidir."},
- {l:3,z:125,q:"Mars neden kırmızı görünür?",o:["Yüzeyindeki demir oksit (pas) yüzünden","Çok sıcak olduğu için","Okyanusları yüzünden"],a:0,e:"Mars'ın toprağındaki demir oksit ona pas rengi verir."},
- {l:0,z:125,q:"Ceres hangi iki gezegenin arasındaki kuşakta bulunur?",o:["Mars ile Jüpiter","Dünya ile Mars","Satürn ile Uranüs"],a:0,e:"Asteroit kuşağı Mars ile Jüpiter arasındadır."},
- {l:5,z:100,q:"Bildiğimiz tek yaşam yuvası hangi gezegendir?",o:["Dünya","Mars","Venüs"],a:0,e:"Şimdilik yaşamın bilindiği tek gezegen Dünya'dır."},
- {l:5,z:125,q:"Dünya'nın çapı yaklaşık kaç km'dir?",o:["12.740 km","1.274 km","127.400 km"],a:0,e:"Dünya'nın çapı yaklaşık 12.740 km'dir."}
+ {l:1,v:0,z:125,q:"Ay, Dünya'dan ortalama ne kadar uzaktadır?",o:["384.000 km","38.400 km","3.840.000 km"],a:0,e:"Ay'ın Dünya'ya ortalama uzaklığı yaklaşık 384.000 km'dir."},
+ {l:1,v:0,z:100,q:"Dünya'nın kaç doğal uydusu vardır?",o:["1","2","8"],a:0,e:"Dünya'nın tek doğal uydusu Ay'dır."},
+ {l:1,v:1,z:125,q:"Ay'ın çekimi okyanuslarda neye neden olur?",o:["Gelgitlere","Depremlere","Fırtınalara"],a:0,e:"Ay'ın çekimi okyanuslardaki gelgitlere neden olur."},
+ {l:2,v:0,z:100,q:"Güneş'e en yakın gezegen hangisidir?",o:["Merkür","Venüs","Mars"],a:0,e:"Merkür Güneş'e en yakın gezegendir."},
+ {l:2,v:0,z:100,q:"Güneş Sistemi'nin en küçük gezegeni hangisidir?",o:["Merkür","Mars","Venüs"],a:0,e:"Merkür en küçük gezegendir."},
+ {l:2,v:1,z:125,q:"Merkür'ün Güneş'in etrafında bir turu kaç gün sürer?",o:["88 gün","365 gün","225 gün"],a:0,e:"Merkür Güneş'e çok yakın olduğu için turu 88 günde tamamlar."},
+ {l:3,v:0,z:100,q:"Hangi gezegene \"Kızıl Gezegen\" denir?",o:["Mars","Jüpiter","Venüs"],a:0,e:"Mars'a Kızıl Gezegen denir."},
+ {l:3,v:0,z:125,q:"Mars neden kırmızı görünür?",o:["Yüzeyindeki demir oksit (pas) yüzünden","Çok sıcak olduğu için","Okyanusları yüzünden"],a:0,e:"Mars'ın yüzeyindeki demir oksit ona kırmızı rengini verir."},
+ {l:3,v:1,z:125,q:"Olympus Mons, Güneş Sistemi'nin bilinen en büyük yanardağıdır. Hangi gezegendedir?",o:["Mars","Venüs","Dünya"],a:0,e:"Olympus Mons Mars'tadır."},
+ {l:3,v:1,z:150,q:"Mars'ın kaç küçük uydusu vardır?",o:["2","1","8"],a:0,e:"Mars'ın Phobos ve Deimos adlı iki uydusu vardır."},
+ {l:4,v:0,z:125,q:"Güneş Sistemi'nin en sıcak gezegeni hangisidir?",o:["Venüs","Merkür","Mars"],a:0,e:"Venüs'ün kalın atmosferi ısıyı hapseder; Merkür'den bile sıcaktır."},
+ {l:4,v:0,z:125,q:"Venüs'ün yüzey sıcaklığı yaklaşık kaç derecedir?",o:["465 °C","46 °C","4.650 °C"],a:0,e:"Venüs'ün yüzeyi yaklaşık 465 °C'dir."},
+ {l:4,v:1,z:150,q:"Venüs'ün dönüş yönü nasıldır?",o:["Çoğu gezegenin tersi yönde","Çoğu gezegenle aynı yönde","Hiç dönmez"],a:0,e:"Venüs çoğu gezegenin tersi yönde döner."},
+ {l:5,v:0,z:100,q:"Dünya yüzeyinin yaklaşık yüzde kaçı sudur?",o:["%71","%30","%50"],a:0,e:"Dünya'nın yüzeyinin yaklaşık %71'i su ile kaplıdır."},
+ {l:5,v:0,z:100,q:"Bildiğimiz tek yaşam yuvası hangi gezegendir?",o:["Dünya","Mars","Venüs"],a:0,e:"Şimdilik yaşamın bilindiği tek gezegen Dünya'dır."},
+ {l:5,v:1,z:125,q:"Dünya'nın çapı yaklaşık kaç km'dir?",o:["12.740 km","1.274 km","127.400 km"],a:0,e:"Dünya'nın çapı yaklaşık 12.740 km'dir."},
+ {l:5,v:1,z:100,q:"Dünya'nın Güneş'in etrafında bir turu kaç gün sürer?",o:["365 gün","88 gün","225 gün"],a:0,e:"Dünya Güneş'in etrafında bir turu 365 günde atar."},
+ {l:6,v:0,z:100,q:"Hangisi Güneş'e en uzak gezegendir?",o:["Neptün","Satürn","Uranüs"],a:0,e:"Neptün Güneş'e en uzak gezegendir."},
+ {l:6,v:1,z:150,q:"Neptün'ün Güneş'in etrafında bir turu yaklaşık kaç yıl sürer?",o:["165 yıl","12 yıl","84 yıl"],a:0,e:"Neptün çok uzakta olduğu için turu yaklaşık 165 yıl sürer. (84 yıl Uranüs'ündür.)"},
+ {l:7,v:0,z:125,q:"Hangi gezegen neredeyse yan yatmış şekilde döner?",o:["Uranüs","Dünya","Mars"],a:0,e:"Uranüs'ün dönme ekseni yaklaşık 98° eğiktir."},
+ {l:7,v:1,z:150,q:"Uranüs turkuaz-mavi renkte görünür. Bunun nedeni nedir?",o:["Atmosferindeki metan gazı","Okyanusları","Demir oksit"],a:0,e:"Metan kırmızı ışığı soğurduğu için Uranüs mavi-yeşil görünür."},
+ {l:7,v:1,z:150,q:"Uranüs'ün Güneş'in etrafında bir turu yaklaşık kaç yıl sürer?",o:["84 yıl","165 yıl","12 yıl"],a:0,e:"Uranüs bir turu yaklaşık 84 yılda atar. (165 yıl Neptün'ündür.)"},
+ {l:8,v:0,z:100,q:"Hangi gezegen en görkemli halkalarıyla ünlüdür?",o:["Satürn","Mars","Merkür"],a:0,e:"Satürn'ün halkaları ünlüdür."},
+ {l:8,v:0,z:125,q:"Satürn'ün halkaları neyden oluşur?",o:["Buz ve kaya parçalarından","Sadece gazdan","Sıvı sudan"],a:0,e:"Halkalar buz ve kaya parçalarından oluşur."},
+ {l:8,v:1,z:150,q:"Satürn'ün yoğunluğu sudan azdır. Yeterince büyük bir okyanusa konsaydı ne olurdu?",o:["Yüzerdi","Batardı","Erirdi"],a:0,e:"Ortalama yoğunluğu sudan düşük olduğu için yüzerdi."},
+ {l:9,v:0,z:100,q:"Güneş Sistemi'nin en büyük gezegeni hangisidir?",o:["Jüpiter","Satürn","Neptün"],a:0,e:"Jüpiter en büyük gezegendir."},
+ {l:9,v:0,z:125,q:"Jüpiter'in içine yaklaşık kaç Dünya sığar?",o:["1300'den fazla","13","130"],a:0,e:"Jüpiter'in içine 1300'den fazla Dünya sığar."},
+ {l:9,v:1,z:125,q:"Jüpiter'deki Büyük Kırmızı Leke nedir?",o:["Yüzyıllardır süren dev bir fırtına","Bir yanardağ","Bir uydu"],a:0,e:"Büyük Kırmızı Leke dev bir fırtınadır."},
+ {l:10,v:0,z:100,q:"Güneş nedir?",o:["Bir yıldız","Bir gezegen","Bir uydu"],a:0,e:"Güneş bir yıldızdır."},
+ {l:10,v:0,z:125,q:"Güneş Sistemi'nin kütlesinin %99'undan fazlasını hangisi taşır?",o:["Güneş","Jüpiter","Dünya"],a:0,e:"Güneş, Güneş Sistemi'nin kütlesinin %99'undan fazlasını taşır."},
+ {l:10,v:1,z:150,q:"Güneş'in içine yaklaşık kaç Dünya sığar?",o:["1,3 milyon","1300","13 milyon"],a:0,e:"Güneş'in içine yaklaşık 1,3 milyon Dünya sığar."},
+ {l:11,v:0,z:150,q:"Betelgeuse hangi takımyıldızındadır?",o:["Orion (Avcı)","Akrep","Büyükayı"],a:0,e:"Betelgeuse Orion takımyıldızındadır."},
+ {l:11,v:1,z:150,q:"Betelgeuse Dünya'dan yaklaşık kaç ışık yılı uzaktadır?",o:["600","6","60.000"],a:0,e:"Betelgeuse yaklaşık 600 ışık yılı uzaktadır."},
+ {l:11,v:1,z:125,q:"Betelgeuse'in bir gün nasıl patlaması bekleniyor?",o:["Süpernova olarak","Gezegen olarak","Kuyruklu yıldız olarak"],a:0,e:"Ömrünün sonunda süpernova olarak patlaması bekleniyor."},
+ {l:12,v:0,z:100,q:"Samanyolu nedir?",o:["Bizim galaksimiz","Bir yıldız","Bir gezegen"],a:0,e:"Samanyolu yüz milyarlarca yıldızdan oluşan galaksimizdir."},
+ {l:12,v:1,z:150,q:"Işık, Samanyolu'nun bir ucundan öbür ucuna yaklaşık kaç yılda gider?",o:["100.000 yıl","1.000 yıl","1 milyon yıl"],a:0,e:"Samanyolu'nun çapı yaklaşık 100.000 ışık yılıdır."}
 ];
 function pickQ(){
-  var seen=Math.max(maxL,3),el=[],i;
-  for(i=0;i<Q.length;i++)if(Q[i].l<=seen)el.push(i);
+  var el=[],i;
+  for(i=0;i<Q.length;i++)if(seenD.indexOf(Q[i].l+':'+Q[i].v)>=0)el.push(i);
+  if(!el.length)return -1;
   var fresh=el.filter(function(x){return qUsed.indexOf(x)<0});
   if(!fresh.length){qUsed=qUsed.filter(function(x){return el.indexOf(x)<0});fresh=el}
   return fresh[Math.floor(Math.random()*fresh.length)];
 }
 function askQ(){
-  var idx=pickQ();qUsed.push(idx);
+  var idx=pickQ();
+  if(idx<0){eduT=0;eduNext=nextQTime();return}
+  qUsed.push(idx);
   var q=Q[idx],order=[0,1,2],i,j,tmp;
   for(i=2;i>0;i--){j=Math.floor(Math.random()*(i+1));tmp=order[i];order[i]=order[j];order[j]=tmp}
   qCur={q:q,done:false};aiming=false;state='quiz';$('toast').hidden=true;
@@ -724,7 +739,7 @@ function buildList(){
     var c=document.createElement('canvas');c.width=112;c.height=112;row.appendChild(c);
     if(open){var g=c.getContext('2d');g.translate(56,56);var k=46/P[l].r;g.scale(k,k);drawPlanet(g,0,0,P[l].r,l,.3,0)}
     var d=document.createElement('div');
-    d.innerHTML=open?'<b>'+(l+1)+'. '+P[l].n+'</b>'+'<i>'+P[l].d+'</i>'+'<p>'+P[l].f+'</p>':'<b>'+(l+1)+'. ???</b><p>Henüz keşfedilmedi. Birleştirerek aç!</p>';
+    d.innerHTML=open?'<b>'+(l+1)+'. '+P[l].n+'</b>'+'<i>'+P[l].d+'</i>'+'<p>'+P[l].f.join(' ')+'</p>':'<b>'+(l+1)+'. ???</b><p>Henüz keşfedilmedi. Birleştirerek aç!</p>';
     row.appendChild(d);list.appendChild(row);
   }
 }
@@ -795,7 +810,7 @@ function loop(ts){
   var dt=Math.min((ts-last)/1000||0,1/30);last=ts;
   update(dt);draw();requestAnimationFrame(loop);
 }
-window.__gz={radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
+window.__gz={radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},seen:function(){return seenD.slice()},markSeen:function(k){seenD.push(k)},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
 openMenu();initSession();
 requestAnimationFrame(loop);
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('./sw.js').catch(function(){});
