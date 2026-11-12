@@ -169,6 +169,7 @@ var P=[
  {n:"Samanyolu",d:"Çap: ~100.000 ışık yılı",r:74,f:["Bizim galaksimiz. Yüz milyarlarca yıldız içerir.", "Güneş, içindeki yıldızlardan sadece biridir. Işık bile bir ucundan öbür ucuna yaklaşık 100.000 yılda gider."]}
 ];
 var RS=1.5625;P.forEach(function(p){p.r=p.r*RS});
+P[7].h=.80;P[8].h=.65;
 var NL=P.length;
 
 /* ---------- Yardımcılar ---------- */
@@ -200,7 +201,7 @@ var muted=lsGet('gz_mute')==='1';
 var toastT=0,playT=0,lscore=0;
 
 function pick(){var r=rng();return r<.4?0:r<.7?1:r<.9?2:3}
-function mk(x,y,l){var r=P[l].r;return{id:++idc,x:x,y:y,vx:0,vy:0,l:l,r:r,im:1/(r*r),a:Math.random()*TAU,age:0,touched:false,sc:1,dead:false}}
+function mk(x,y,l){var h=P[l].h||1,r=P[l].r*h;return{id:++idc,x:x,y:y,vx:0,vy:0,l:l,h:h,r:r,im:1/(r*r),a:Math.random()*TAU,age:0,touched:false,sc:1,dead:false}}
 
 function newGame(m){
   mode=m;rng=m==='daily'?mulberry32(parseInt(dateStr(),10)):Math.random;
@@ -422,6 +423,10 @@ function disc(g,r){g.beginPath();g.arc(0,0,r,0,TAU)}
 function sph(g,r,c1,c2){var gr=g.createRadialGradient(-r*.35,-r*.4,r*.05,0,0,r);gr.addColorStop(0,c1);gr.addColorStop(1,c2);g.fillStyle=gr;disc(g,r);g.fill()}
 function shade(g,r){var gr=g.createRadialGradient(-r*.3,-r*.35,r*.3,0,0,r*1.02);gr.addColorStop(0,'rgba(255,255,255,.14)');gr.addColorStop(.6,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(0,0,25,.45)');g.fillStyle=gr;disc(g,r);g.fill()}
 function blob(g,x,y,r,c){g.fillStyle=c;g.beginPath();g.arc(x,y,r,0,TAU);g.fill()}
+function ringDash(g,rx,ry,half,r,tm,col){
+  g.save();g.setLineDash([r*.1,r*.3]);g.lineDashOffset=-tm*r*.45;g.strokeStyle=col;g.lineWidth=r*.03;
+  g.beginPath();g.ellipse(0,0,rx,ry,0,half?0:Math.PI,half?Math.PI:TAU);g.stroke();g.restore();
+}
 function inside(g,r,a,fn){g.save();disc(g,r);g.clip();g.rotate(a);fn();g.restore()}
 
 function drawPlanet(g,x,y,r,l,a,tm){
@@ -449,27 +454,34 @@ function drawPlanet(g,x,y,r,l,a,tm){
     shade(g,r);break;
   case 5:
     sph(g,r,'#6fc0ff','#0c3f9a');
-    inside(g,r,a,function(){blob(g,-r*.3,-r*.1,r*.38,'#3fa65a');blob(g,r*.45,r*.3,r*.3,'#3fa65a');blob(g,r*.05,-r*.55,r*.2,'#4fb86a');blob(g,-r*.1,r*.55,r*.18,'#3fa65a');
-      g.fillStyle='rgba(255,255,255,.55)';g.beginPath();g.ellipse(r*.2,-r*.2,r*.35,r*.1,.3,0,TAU);g.fill();g.beginPath();g.ellipse(-r*.4,r*.35,r*.3,r*.09,-.2,0,TAU);g.fill()});
+    inside(g,r,a,function(){blob(g,-r*.3,-r*.1,r*.38,'#3fa65a');blob(g,r*.45,r*.3,r*.3,'#3fa65a');blob(g,r*.05,-r*.55,r*.2,'#4fb86a');blob(g,-r*.1,r*.55,r*.18,'#3fa65a')});
+    inside(g,r,a*.5+tm*.35,function(){
+      g.fillStyle='rgba(255,255,255,.58)';
+      g.beginPath();g.ellipse(r*.2,-r*.2,r*.35,r*.1,.3,0,TAU);g.fill();
+      g.beginPath();g.ellipse(-r*.4,r*.35,r*.3,r*.09,-.2,0,TAU);g.fill();
+      g.beginPath();g.ellipse(-r*.25,-r*.6,r*.28,r*.08,.15,0,TAU);g.fill();
+      g.beginPath();g.ellipse(r*.45,r*.5,r*.22,r*.07,-.3,0,TAU);g.fill()});
     shade(g,r);break;
   case 6:
     sph(g,r,'#6f9bff','#1a2f9a');
     inside(g,r,a*.3,function(){for(k=-3;k<=3;k++){g.fillStyle='rgba(180,210,255,'+(k%2?.2:.1)+')';g.fillRect(-r,k*r*.28-r*.08,2*r,r*.16)}blob(g,r*.25,r*.2,r*.2,'rgba(10,20,80,.4)')});
     shade(g,r);break;
   case 7:
-    g.save();g.rotate(1.2);g.strokeStyle='rgba(200,240,250,.6)';g.lineWidth=r*.04;g.beginPath();g.ellipse(0,0,r,r*.24,0,Math.PI,TAU);g.stroke();g.restore();
+    var wu=1.2+Math.sin(tm*1.1)*.03;
+    g.save();g.rotate(wu);g.strokeStyle='rgba(200,240,250,.6)';g.lineWidth=r*.04;g.beginPath();g.ellipse(0,0,r,r*.24,0,Math.PI,TAU);g.stroke();ringDash(g,r,r*.24,false,r,tm,'rgba(240,255,255,.8)');g.restore();
     sph(g,r*.78,'#d6fbff','#3a9eb0');
     inside(g,r*.78,a*.2,function(){for(k=-2;k<=2;k++){g.fillStyle='rgba(255,255,255,.12)';g.fillRect(-r,k*r*.25,2*r,r*.1)}});
     shade(g,r*.78);
-    g.save();g.rotate(1.2);g.strokeStyle='rgba(200,240,250,.8)';g.lineWidth=r*.04;g.beginPath();g.ellipse(0,0,r,r*.24,0,0,Math.PI);g.stroke();g.restore();break;
+    g.save();g.rotate(wu);g.strokeStyle='rgba(200,240,250,.8)';g.lineWidth=r*.04;g.beginPath();g.ellipse(0,0,r,r*.24,0,0,Math.PI);g.stroke();ringDash(g,r,r*.24,true,r,tm,'rgba(240,255,255,.9)');g.restore();break;
   case 8:
-    g.save();g.rotate(-.35);g.strokeStyle='rgba(230,205,150,.9)';g.lineWidth=r*.1;
-    g.beginPath();g.ellipse(0,0,r*.98,r*.3,0,Math.PI,TAU);g.stroke();g.restore();
+    var ws=-.35+Math.sin(tm*.9)*.03;
+    g.save();g.rotate(ws);g.strokeStyle='rgba(230,205,150,.9)';g.lineWidth=r*.1;
+    g.beginPath();g.ellipse(0,0,r*.98,r*.3,0,Math.PI,TAU);g.stroke();ringDash(g,r*.98,r*.3,false,r,tm,'rgba(255,245,215,.85)');g.restore();
     sph(g,r*.62,'#f6e6b4','#a9803d');
     inside(g,r*.62,a*.2,function(){for(k=0;k<5;k++){g.fillStyle='rgba(150,100,40,.22)';g.fillRect(-r,-r*.62+k*r*.25,2*r,r*.09)}});
     shade(g,r*.62);
-    g.save();g.rotate(-.35);g.strokeStyle='#ecd9a6';g.lineWidth=r*.1;g.beginPath();g.ellipse(0,0,r*.98,r*.3,0,0,Math.PI);g.stroke();
-    g.strokeStyle='rgba(190,160,100,.8)';g.lineWidth=r*.05;g.beginPath();g.ellipse(0,0,r*.8,r*.24,0,0,Math.PI);g.stroke();g.restore();break;
+    g.save();g.rotate(ws);g.strokeStyle='#ecd9a6';g.lineWidth=r*.1;g.beginPath();g.ellipse(0,0,r*.98,r*.3,0,0,Math.PI);g.stroke();
+    g.strokeStyle='rgba(190,160,100,.8)';g.lineWidth=r*.05;g.beginPath();g.ellipse(0,0,r*.8,r*.24,0,0,Math.PI);g.stroke();ringDash(g,r*.98,r*.3,true,r,tm,'rgba(255,245,215,.95)');g.restore();break;
   case 9:
     sph(g,r,'#f0d4a8','#9a6a3a');
     inside(g,r,a*.2,function(){var cs=['#c68c5a','#ecd0a4','#b4764a','#f2dcb4','#a8683e'];for(k=0;k<9;k++){g.fillStyle=cs[k%5];g.globalAlpha=.55;g.fillRect(-r,-r+k*r*.23,2*r,r*.15)}g.globalAlpha=1;g.fillStyle='#c4482a';g.beginPath();g.ellipse(r*.3,r*.28,r*.22,r*.12,0,0,TAU);g.fill()});
@@ -516,7 +528,7 @@ function draw(){
     g.save();g.setLineDash([4,8]);g.strokeStyle='rgba(255,255,255,.14)';g.lineWidth=2;g.beginPath();g.moveTo(px,SPAWN);g.lineTo(px,FLOOR);g.stroke();g.restore();
   }
   // gezegenler
-  for(i=0;i<bodies.length;i++){var b=bodies[i];drawPlanet(g,b.x,b.y,b.r*b.sc,b.l,b.a,t)}
+  for(i=0;i<bodies.length;i++){var b=bodies[i];drawPlanet(g,b.x,b.y,b.r*b.sc/b.h,b.l,b.a,t)}
   // bekleyen gezegen
   if(state==='play'||state==='paused'||state==='quiz'||state==='info'){
     var rdy=t-lastDrop>=.45,rr=P[cur].r,x2=clamp(sunum?aimX:aimX,L+rr+1,R-rr-1);
@@ -948,7 +960,7 @@ function loop(ts){
   var dt=Math.min((ts-last)/1000||0,1/30);last=ts;
   update(dt);draw();requestAnimationFrame(loop);
 }
-window.__gz={sync:function(){syncNow()},apiok:function(){return apiOK},sent:function(){return sentS},canc:function(){return canCount()},prof:function(){return JSON.stringify(me)},ls:function(){return lscore},radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},seen:function(){return seenD.slice()},markSeen:function(k){seenD.push(k)},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
+window.__gz={dp:function(g,x,y,r,l,a,tm){drawPlanet(g,x,y,r,l,a,tm)},hit:function(l){return P[l].r*(P[l].h||1)},sync:function(){syncNow()},apiok:function(){return apiOK},sent:function(){return sentS},canc:function(){return canCount()},prof:function(){return JSON.stringify(me)},ls:function(){return lscore},radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},seen:function(){return seenD.slice()},markSeen:function(k){seenD.push(k)},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
 openMenu();initSession();syncNow();
 requestAnimationFrame(loop);
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('./sw.js').catch(function(){});
