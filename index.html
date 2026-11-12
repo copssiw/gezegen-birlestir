@@ -92,24 +92,24 @@ h2{margin:6px 0;font-size:24px}
 
 <div id="confirmScr" class="screen" hidden>
   <h2>Emin misin?</h2>
-  <div class="sub" style="max-width:300px;line-height:1.5">Liderlik tablosundaki bütün hesaplar ve kayıtlı oyunlar silinecek. Bu işlem geri alınamaz.</div>
+  <div class="sub" style="max-width:300px;line-height:1.5">Puanın, oyundaki ilerlemen ve açtığın gezegenler silinecek. Adın kalır. Bu işlem geri alınamaz.</div>
   <button class="btn danger" id="rstYes">Evet, hepsini sil</button>
   <button class="btn" id="rstNo">Vazgeç</button>
 </div>
 
 <div id="board" class="screen" hidden>
   <h2>Liderlik Tablosu</h2>
-  <div class="sub">Bu cihazda. İstediğin satırdan Devam / Oyna diyerek o hesaptan oynayabilirsin.</div>
+  <div class="sub">Herkesin en yüksek puanı. Ortak tablo.</div>
   <div id="blist"></div>
   <button class="btn pri" id="boardBack">Geri</button>
 </div>
 
 <div id="nameScr" class="screen" hidden>
   <div class="logo" style="font-size:32px">KİMSİN?</div>
-  <div class="sub">Bu oturum için bir takma ad seç.<br>Daha önce kullandığın bir ad olamaz.</div>
+  <div class="sub">Bir takma ad seç.<br>Bu adı sonradan değiştiremezsin.</div>
   <input id="nameIn" maxlength="14" autocomplete="off" autocapitalize="words" placeholder="Takma adın">
   <div id="nameErr"></div>
-  <div class="tiny" style="margin-top:0">Lütfen saygılı bir ad seç. Başkalarını rahatsız eden ya da kırıcı adlar yazma.</div>
+  <div class="tiny" style="margin-top:0">Lütfen saygılı bir ad seç. Başkalarını rahatsız eden ya da kırıcı adlar yazma. Ad seçmek için internet gerekir.</div>
   <button class="btn pri" id="nameOk">Tamam</button>
 </div>
 
@@ -174,7 +174,7 @@ var parts=[],floats=[],banner=0,won=false,idc=0,overT=0,newRec=false;
 var gzMax=parseInt(lsGet('gz_max2')||'0',10)||0;
 var seenD=(function(){try{var a=JSON.parse(lsGet('gz_seen2')||'[]');return Array.isArray(a)?a.filter(function(x){return typeof x==='string'&&/^\d+:[01]$/.test(x)}):[]}catch(e){return[]}})();
 var muted=lsGet('gz_mute')==='1';
-var toastT=0,playT=0;
+var toastT=0,playT=0,lscore=0;
 
 function pick(){var r=rng();return r<.4?0:r<.7?1:r<.9?2:3}
 function mk(x,y,l){var r=P[l].r;return{id:++idc,x:x,y:y,vx:0,vy:0,l:l,r:r,im:1/(r*r),a:Math.random()*TAU,age:0,touched:false,sc:1,dead:false}}
@@ -183,7 +183,7 @@ function newGame(m){
   mode=m;rng=m==='daily'?mulberry32(parseInt(dateStr(),10)):Math.random;
   bodies=[];score=0;combo=0;danger=0;maxL=0;won=false;banner=0;parts=[];floats=[];newRec=false;overT=0;
   bestKey=m==='daily'?'gz_bd2_'+dateStr():'gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
-  cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=0;
+  cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=0;lscore=0;
   hideAll();
 }
 function hideAll(){$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true;$('quiz').hidden=true;$('board').hidden=true}
@@ -351,7 +351,7 @@ function gameOver(){
     $('oTime').textContent='Oynama süresi: '+fmtT(playT);
     $('oInfo').textContent=(newRec?'Yeni rekor! ':'Rekor: '+best+'. ')+'En yüksek gezegen: '+P[maxL].n+(mode==='daily'?' (Günlük)':'');
     $('over').hidden=false;
-    score=0;
+    score=0;lscore=0;
   }
   overT=0;
 }
@@ -366,6 +366,7 @@ function confetti(){
 function update(dt){
   t+=dt;
   if((boardDirty&&t-lastSave>2)||(state==='play'&&!sunum&&t-lastSave>3))saveBoard();
+  if(me&&Date.now()-lastSyncAt>(apiOK?8000:20000))syncNow();
   if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').hidden=true}
   if(banner>0)banner-=dt;
   for(var i=parts.length-1;i>=0;i--){var p=parts[i];p.life-=dt;if(p.life<=0){parts.splice(i,1);continue}p.vy+=p.g*dt;p.x+=p.vx*dt;p.y+=p.vy*dt}
@@ -525,125 +526,181 @@ function draw(){
   }
 }
 
-/* ---------- Oturum, puan ve liderlik ---------- */
-function ssGet(k){try{return sessionStorage.getItem(k)}catch(e){return null}}
-function ssSet(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}
-function loadBoard(){
-  var r=lsGet('gz_board2'),a=[];
-  try{a=JSON.parse(r||'[]')}catch(e){a=[]}
-  if(!Array.isArray(a))a=[];
-  var out=[],seen={};
-  a.forEach(function(e){
-    if(!e||typeof e.n!=='string')return;
-    var n=e.n.replace(/\s+/g,' ').trim().slice(0,14);if(n.length<1)return;
-    var k=nk(n),sc2=isFinite(+e.s)?Math.max(0,Math.floor(+e.s)):0;
-    if(seen[k]){if(seen[k].s<sc2)seen[k].s=sc2;return}
-    var o={n:n,s:sc2,d:isFinite(+e.d)&&+e.d>0?+e.d:Date.now(),g:(e.g&&typeof e.g==='object'&&Array.isArray(e.g.b)&&e.g.v===2)?e.g:null};
-    seen[k]=o;out.push(o);
-  });
-  return out;
+/* ---------- Oyuncu profili ---------- */
+function loadProf(){
+  var r=lsGet('gz_prof'),o=null;
+  try{o=JSON.parse(r||'null')}catch(e){o=null}
+  if(!o||typeof o.n!=='string')return null;
+  var n=o.n.replace(/\s+/g,' ').trim().slice(0,14);if(n.length<1)return null;
+  if(typeof o.tk!=='string'||o.tk.length<16)return null;
+  return {n:n,tk:o.tk,pr:!!o.pr,s:isFinite(+o.s)?Math.max(0,Math.floor(+o.s)):0,d:(isFinite(+o.d)&&+o.d>0)?+o.d:Date.now(),g:(o.g&&typeof o.g==='object'&&Array.isArray(o.g.b)&&o.g.v===2)?o.g:null};
 }
-var board=loadBoard(),me=null,boardDirty=false,lastSave=0,sessName='',removed={};
+var me=loadProf(),boardDirty=false,lastSave=0,sessName=me?me.n:'';
+/* ---------- Ortak tablo (sunucu) ---------- */
+var API='https://gezegen-api.gezegen-birlestir.workers.dev';
+var apiOK=false,sentS=0,syncBusy=false,lastSyncAt=0,topCache=null,myRank=0,regBusy=false;
+function nk(x){var y=x;try{y=x.toLocaleLowerCase('tr-TR')}catch(e){y=x.toLowerCase()}return y.replace(/ı/g,'i').replace(/\s+/g,' ').trim()}
+function api(path,body,cb,ka){
+  var done=false,to=null,ctl=null;
+  function fin(err,j,st){if(done)return;done=true;if(to)clearTimeout(to);cb(err,j,st)}
+  if(typeof fetch!=='function'){fin(true);return}
+  try{ctl=(typeof AbortController!=='undefined')?new AbortController():null}catch(e){ctl=null}
+  to=setTimeout(function(){if(ctl){try{ctl.abort()}catch(e){}}fin(true)},9000);
+  var opt={method:body?'POST':'GET',cache:'no-store'};
+  if(body){opt.headers={'content-type':'application/json'};opt.body=JSON.stringify(body)}
+  if(ctl)opt.signal=ctl.signal;
+  if(ka)opt.keepalive=true;
+  try{
+    fetch(API+path,opt).then(function(r){return r.json().then(function(j){fin(false,j,r.status)},function(){fin(false,null,r.status)})}).catch(function(){fin(true)});
+  }catch(e){fin(true)}
+}
+/* Tabloya sayılacak puan: internet var VE sunucuya ulaşılıyorsa kazanılır */
+function canCount(){return !(typeof navigator!=='undefined'&&navigator.onLine===false)&&apiOK}
+function syncNow(urgent){
+  if(!me||!me.tk||syncBusy)return;
+  if(typeof navigator!=='undefined'&&navigator.onLine===false){apiOK=false;return}
+  syncBusy=true;lastSyncAt=Date.now();
+  if(me.pr){
+    api('/reset',{name:me.n,token:me.tk},function(err,j,st){
+      syncBusy=false;
+      if(err||st>=500){apiOK=false;return}
+      apiOK=true;
+      if(st===401){serverLost();return}
+      if(j&&j.ok){me.pr=false;sentS=0;saveBoard(true);syncNow()}
+    },urgent);
+    return;
+  }
+  var path=me.s>sentS?'/score':'/me',body={name:me.n,token:me.tk};
+  if(path==='/score')body.score=me.s;
+  api(path,body,function(err,j,st){
+    syncBusy=false;
+    if(err||st>=500){apiOK=false;return}
+    apiOK=true;
+    if(st===401){serverLost();return}
+    if(j&&typeof j.best==='number'){sentS=j.best;if(j.best>me.s){me.s=j.best;boardDirty=true}}
+    if(j&&typeof j.rank==='number')myRank=j.rank;
+  },urgent);
+}
+function serverLost(){
+  try{localStorage.removeItem('gz_prof')}catch(e){}
+  me=null;sessName='';sentS=0;bodies=[];state='menu';hideAll();$('toast').hidden=true;
+  showName('Adın tablodan silinmiş. Yeni bir ad seç.');
+}
+function genTok(){
+  var a='',i;
+  try{var u=new Uint8Array(16);crypto.getRandomValues(u);for(i=0;i<16;i++)a+=('0'+u[i].toString(16)).slice(-2)}
+  catch(e){for(i=0;i<32;i++)a+=Math.floor(Math.random()*16).toString(16)}
+  return a;
+}
 function snap(){
   if(!me||sunum)return;
-  if(state==='over'){me.g=null;return}
+  if(state==='over'){if(mode==='normal')me.g=null;return}
+  if(mode!=='normal')return;
   if(state!=='play'&&state!=='paused'&&state!=='quiz'&&state!=='info')return;
   var r=function(v){return Math.round(v*10)/10};
-  me.g={v:2,pt:Math.floor(playT),mo:mode,s:score,c:cur,n:nxt,ml:maxL,w:won?1:0,b:bodies.map(function(o){return{x:r(o.x),y:r(o.y),vx:r(o.vx),vy:r(o.vy),l:o.l,a:r(o.a),t:o.touched?1:0}})};
+  me.g={v:2,pt:Math.floor(playT),ls:lscore,mo:mode,s:score,c:cur,n:nxt,ml:maxL,w:won?1:0,b:bodies.map(function(o){return{x:r(o.x),y:r(o.y),vx:r(o.vx),vy:r(o.vy),l:o.l,a:r(o.a),t:o.touched?1:0}})};
 }
-function syncBoard(){
-  var stored=loadBoard(),out=[],seen={},mk2=me?nk(me.n):null;
-  stored.forEach(function(e){
-    var k=nk(e.n);if(removed[k]||seen[k])return;seen[k]=1;
-    out.push(k===mk2?me:e);
-  });
-  if(me&&!seen[mk2]&&!removed[mk2])out.push(me);
-  if(out.length>60){
-    var keep=out.slice().sort(function(a,b){return ((b===me)-(a===me))||(b.s-a.s)}).slice(0,60);
-    out=out.filter(function(e){return keep.indexOf(e)>=0});
-  }
-  board=out;
-}
-function writeBoard(){try{localStorage.setItem('gz_board2',JSON.stringify(board));return true}catch(e){return false}}
-function saveBoard(){
-  snap();syncBoard();
-  if(!writeBoard()){board.forEach(function(e){if(e!==me)e.g=null});writeBoard()}
+function saveBoard(force){
+  snap();
+  if(!me)return;
+  if(!force){var st=loadProf();if(st&&st.n===me.n&&st.s>me.s)me.s=st.s}
+  try{localStorage.setItem('gz_prof',JSON.stringify(me))}
+  catch(e){var g0=me.g;me.g=null;try{localStorage.setItem('gz_prof',JSON.stringify(me))}catch(e2){}me.g=g0}
   boardDirty=false;lastSave=t;
 }
 function loadGame(g){
   try{
     var bs=(Array.isArray(g.b)?g.b:[]).slice(0,150).filter(function(o){return o&&typeof o.x==='number'&&typeof o.y==='number'&&isFinite(o.x)&&isFinite(o.y)&&o.l>=0&&o.l<NL&&o.l===Math.floor(o.l)});
     var nb=bs.map(function(o){var q=mk(clamp(o.x,L+P[o.l].r,R-P[o.l].r),clamp(o.y,0,FLOOR-P[o.l].r),o.l);q.vx=clamp(+o.vx||0,-900,900);q.vy=clamp(+o.vy||0,-900,900);q.a=+o.a||0;q.age=1;q.touched=!!o.t;return q});
-    mode=g.mo==='daily'?'daily':'normal';rng=mode==='daily'?mulberry32(parseInt(dateStr(),10)):Math.random;
+    mode='normal';rng=Math.random;
     bodies=nb;
     score=isFinite(+g.s)?Math.max(0,Math.floor(+g.s)):0;
+    lscore=isFinite(+g.ls)?Math.max(0,Math.floor(+g.ls)):0;
     cur=(g.c>=0&&g.c<NL&&g.c===Math.floor(g.c))?g.c:pick();nxt=(g.n>=0&&g.n<NL&&g.n===Math.floor(g.n))?g.n:pick();
     maxL=Math.max(0,Math.min(NL-1,Math.floor(+g.ml||0)));won=!!g.w;combo=0;danger=0;banner=0;parts=[];floats=[];newRec=false;overT=0;
-    bestKey=mode==='daily'?'gz_bd2_'+dateStr():'gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
+    bestKey='gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
     lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=Math.max(0,Math.floor(+g.pt||0));hideAll();return true;
   }catch(err){return false}
 }
-function playAs(e){
-  var key=nk(e.n),same=(me&&nk(me.n)===key);
-  if(same&&state==='paused'){$('board').hidden=true;state='play';lastDrop=t;hideAll();return}
-  saveBoard();
-  var fe=null;board.forEach(function(x){if(nk(x.n)===key)fe=x});
-  if(!fe)fe=e;
-  if(!same){
-    if(me&&me.s===0&&!me.g){removed[nk(me.n)]=1;var ix=board.indexOf(me);if(ix>=0)board.splice(ix,1)}
-    me=fe;sessName=fe.n;ssSet('gz_sess',fe.n);
-  }
-  $('board').hidden=true;
-  if(!(fe.g&&loadGame(fe.g)))newGame('normal');
-  saveBoard();
+function addScore(d){
+  score=Math.max(0,score+d);
+  if(sunum||mode!=='normal')return;
+  if(canCount())lscore=Math.max(0,lscore+d);
+  if(me&&lscore>me.s){me.s=lscore;boardDirty=true}
 }
-function addScore(d){score=Math.max(0,score+d);if(!sunum&&me&&score>me.s){me.s=score;boardDirty=true}}
-function nk(x){var y=x;try{y=x.toLocaleLowerCase('tr-TR')}catch(e){y=x.toLowerCase()}return y.replace(/ı/g,'i').replace(/\s+/g,' ').trim()}
-function showName(){$('nameErr').textContent='';$('nameIn').value='';$('nameScr').hidden=false;setTimeout(function(){try{$('nameIn').focus()}catch(e){}},200)}
+function showName(msg){$('nameErr').textContent=msg||'';$('nameIn').value='';$('nameScr').hidden=false;setTimeout(function(){try{$('nameIn').focus()}catch(e){}},200)}
 function acceptName(){
-  var v=$('nameIn').value.replace(/\s+/g,' ').trim(),err=$('nameErr'),i;
+  if(regBusy)return;
+  var v=$('nameIn').value.replace(/\s+/g,' ').trim(),err=$('nameErr'),ok=$('nameOk');
   if(v.length<2){err.textContent='En az 2 harf yaz.';return}
-  var k=nk(v);syncBoard();
-  for(i=0;i<board.length;i++)if(nk(board[i].n)===k){err.textContent='Bu ad daha önce kullanıldı. Başka bir ad seç.';return}
-  delete removed[k];me={n:v,s:0,d:Date.now(),g:null};board.push(me);sessName=v;ssSet('gz_sess',v);saveBoard();
-  $('nameScr').hidden=true;err.textContent='';openMenu();
+  if(typeof navigator!=='undefined'&&navigator.onLine===false){err.textContent='Sunucuya bağlanılamadı. İnternete bağlanıp tekrar dene.';return}
+  var pend=null;try{pend=JSON.parse(lsGet('gz_pend')||'null')}catch(e){pend=null}
+  var tk=(pend&&pend.k===nk(v)&&typeof pend.t==='string'&&pend.t.length>=32)?pend.t:genTok();
+  lsSet('gz_pend',JSON.stringify({k:nk(v),t:tk}));
+  regBusy=true;ok.disabled=true;ok.textContent='Kontrol ediliyor…';err.textContent='';
+  api('/register',{name:v,token:tk},function(e,j,st){
+    regBusy=false;ok.disabled=false;ok.textContent='Tamam';
+    if(e||st>=500||!j){err.textContent='Sunucuya bağlanılamadı. İnternete bağlanıp tekrar dene.';return}
+    if(j.ok&&j.name){
+      try{localStorage.removeItem('gz_pend')}catch(x){}
+      me={n:j.name,tk:tk,pr:false,s:0,d:Date.now(),g:null};sessName=me.n;sentS=0;apiOK=true;
+      saveBoard(true);$('nameScr').hidden=true;err.textContent='';openMenu();return;
+    }
+    var m={taken:'Bu ad alınmış. Başka bir ad seç.',bad:'Bu ad uygun değil. Başka bir ad seç.',chars:'Sadece harf, rakam, boşluk, nokta, tire ve alt çizgi kullan (en fazla 14 karakter).',short:'En az 2 harf yaz.'};
+    if(j.err==='taken'||j.err==='bad')try{localStorage.removeItem('gz_pend')}catch(x){}
+    err.textContent=m[j.err]||'Bir sorun oldu. Tekrar dene.';
+  });
 }
 function initSession(){
-  var nm=ssGet('gz_sess'),i;
-  if(nm){
-    syncBoard();for(i=0;i<board.length;i++)if(nk(board[i].n)===nk(nm)){me=board[i]}
-    if(!me){me={n:nm,s:0,d:Date.now(),g:null};board.push(me);saveBoard()}
-    sessName=me.n;openMenu();return;
+  if(me){
+    if(me.g&&loadGame(me.g))state='paused';else me.g=null;
+    openMenu();return;
   }
   showName();
+}
+function rowEl(rank,name,score,isMe,sub){
+  var row=document.createElement('div');row.className='row'+(isMe?' me':'');
+  var rk=document.createElement('b');rk.textContent=rank?rank+'.':'';rk.style.width='34px';
+  var mid=document.createElement('div');mid.style.flex='1';
+  var nm=document.createElement('b');nm.textContent=name+(isMe?' (sen)':'');mid.appendChild(nm);
+  if(sub){var dt=document.createElement('p');dt.textContent=sub;mid.appendChild(dt)}
+  var sc2=document.createElement('b');sc2.textContent=score;sc2.style.color='#ffd27a';
+  row.appendChild(rk);row.appendChild(mid);row.appendChild(sc2);return row;
 }
 function buildBoard(){
   saveBoard();
   var list=$('blist');list.innerHTML='';
-  var arr=board.slice().sort(function(a,b){return b.s-a.s}).slice(0,30);
-  arr.forEach(function(e,i){
-    var row=document.createElement('div');row.className='row'+(e===me?' me':'');
-    var rk=document.createElement('b');rk.textContent=(i+1)+'.';rk.style.width='34px';
-    var mid=document.createElement('div');mid.style.flex='1';
-    var nm=document.createElement('b');nm.textContent=e.n+(e===me?' (sen)':'');
-    var dt=document.createElement('p');
-    var live=(e===me&&!sunum&&(state==='paused'||state==='play'||state==='quiz'||state==='info'))?' · şu an: '+score:'';
-    dt.textContent=new Date(e.d).toLocaleDateString('tr-TR')+live;
-    mid.appendChild(nm);mid.appendChild(dt);
-    var sc2=document.createElement('b');sc2.textContent=e.s;sc2.style.color='#ffd27a';
-    row.appendChild(rk);row.appendChild(mid);row.appendChild(sc2);
-    if(!sunum){
-      var canRes=(e===me&&state==='paused')||!!e.g,pb=document.createElement('button');
-      pb.className=(e===me?'btn pri':'btn');pb.textContent=canRes?'Devam':'Oyna';
-      pb.style.cssText='width:auto;max-width:none;padding:9px 14px;font-size:14px;margin-left:8px;flex:none';
-      pb.onclick=function(){playAs(e)};
-      row.appendChild(pb);
+  var msg=document.createElement('div');msg.className='tiny';msg.style.maxWidth='none';msg.textContent='Tablo yükleniyor…';list.appendChild(msg);
+  var req=(buildBoard.n=(buildBoard.n||0)+1);
+  syncNow();
+  api('/top?n=50',null,function(err,j,st){
+    if(req!==buildBoard.n||$('board').hidden)return;
+    list.innerHTML='';
+    var arr=null,note='';
+    if(!err&&st<500&&j&&j.ok&&Array.isArray(j.list)){arr=j.list;topCache=arr;apiOK=true}
+    else{apiOK=false;if(topCache){arr=topCache;note='Tablo yüklenemedi. Son görülen tablo gösteriliyor.'}else note='Tablo yüklenemedi. İnterneti kontrol edip tekrar dene.'}
+    var act=(mode==='normal'&&!sunum&&(state==='paused'||state==='play'||state==='quiz'||state==='info'));
+    var mk=me?nk(me.n):'',found=false;
+    if(arr)arr.slice(0,50).forEach(function(e,i){
+      if(!e||typeof e.name!=='string')return;
+      var isMe=nk(e.name)===mk;if(isMe)found=true;
+      list.appendChild(rowEl(i+1,e.name,e.score|0,isMe,isMe&&act?'şu an: '+score:''));
+    });
+    if(me&&!found){
+      var sep=document.createElement('div');sep.className='tiny';sep.style.maxWidth='none';sep.textContent=myRank>0?'Senin sıran: '+myRank:'';
+      if(sep.textContent)list.appendChild(sep);
+      list.appendChild(rowEl(myRank>0?myRank:0,me.n,me.s,true,act?'şu an: '+score:''));
     }
-    list.appendChild(row);
+    if(arr&&!arr.length&&!me){}
+    var tn=document.createElement('div');tn.className='tiny';tn.style.maxWidth='none';
+    tn.textContent=(note?note+' ':'')+'Puanlar sadece internet varken tabloya sayılır. İnternetsiz kazanılan puanlar kaydedilmez.'+(canCount()?'':' Şu an çevrimdışısın ya da sunucuya ulaşılamıyor.');
+    list.appendChild(tn);
   });
 }
-document.addEventListener('visibilitychange',function(){if(document.hidden)saveBoard()});
-window.addEventListener('pagehide',saveBoard);
+document.addEventListener('visibilitychange',function(){if(document.hidden){saveBoard();lastSyncAt=0;syncNow(true)}});
+window.addEventListener('pagehide',function(){saveBoard();syncNow(true)});
+window.addEventListener('online',function(){lastSyncAt=0;syncNow()});
+window.addEventListener('offline',function(){apiOK=false});
 
 /* ---------- Eğitim Modu ---------- */
 function nextQTime(){return 45+Math.random()*45}
@@ -723,12 +780,14 @@ function closeQ(){$('quiz').hidden=true;eduT=0;eduNext=nextQTime();lastDrop=t;st
 function setEduTxt(){$('bEdu').textContent='Eğitim Modu: '+(eduOn?'Açık':'Kapalı')}
 
 function doReset(){
-  try{localStorage.removeItem('gz_board2')}catch(e){}
-  try{sessionStorage.removeItem('gz_sess')}catch(e){}
-  board=[];me=null;removed={};sessName='';boardDirty=false;
-  bodies=[];score=0;maxL=0;parts=[];floats=[];combo=0;danger=0;state='menu';
+  if(me){me.s=0;me.g=null;me.pr=true}
+  seenD=[];try{localStorage.removeItem('gz_seen2')}catch(e){}
+  try{var del=[],i,k;for(i=0;i<localStorage.length;i++){k=localStorage.key(i);if(k==='gz_max2'||k==='gz_best2'||(k&&k.indexOf('gz_bd2_')===0))del.push(k)}del.forEach(function(x){localStorage.removeItem(x)})}catch(e){}
+  gzMax=0;best=0;
+  bodies=[];score=0;lscore=0;maxL=0;parts=[];floats=[];combo=0;danger=0;playT=0;state='menu';mode='normal';
+  saveBoard(true);lastSyncAt=0;syncNow();
   hideAll();$('confirmScr').hidden=true;$('toast').hidden=true;
-  openMenu();showName();
+  openMenu();
 }
 
 /* ---------- Gezegenler listesi ---------- */
@@ -752,13 +811,20 @@ function openMenu(){
   var bd=parseInt(lsGet('gz_best2')||'0',10)||0;
   $('whoTxt').textContent=sessName?'Oyuncu: '+sessName:'';
   $('bestTxt').textContent='Rekor: '+bd+'  |  En yüksek: '+P[gzMax].n;
-  $('bCont').hidden=state!=='paused';
+  var hasG=!!(me&&me.g),mainPaused=(state==='paused'&&mode==='normal');
+  $('bCont').hidden=!(state==='paused'||hasG);
+  $('bPlay').hidden=(hasG||mainPaused);
   $('menu').hidden=false;$('over').hidden=true;
 }
 function exitSunum(){sunum=false;state='menu';bodies=[];hideAll();$('toast').hidden=true;openMenu()}
 $('bPlay').onclick=function(){sunum=false;newGame('normal')};
 $('bDaily').onclick=function(){sunum=false;newGame('daily')};
-$('bCont').onclick=function(){state='play';hideAll()};
+$('bCont').onclick=function(){
+  if(state==='paused'&&mode==='normal'){state='play';lastDrop=t;hideAll();return}
+  if(me&&me.g&&loadGame(me.g))return;
+  if(state==='paused'){state='play';lastDrop=t;hideAll();return}
+  newGame('normal');
+};
 $('bCards').onclick=function(){buildList();$('menu').hidden=true;$('cards').hidden=false};
 $('bBack').onclick=function(){$('cards').hidden=true;$('menu').hidden=false};
 $('bPres').onclick=function(){sunum=true;newGame('normal')};
@@ -810,8 +876,8 @@ function loop(ts){
   var dt=Math.min((ts-last)/1000||0,1/30);last=ts;
   update(dt);draw();requestAnimationFrame(loop);
 }
-window.__gz={radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},seen:function(){return seenD.slice()},markSeen:function(k){seenD.push(k)},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
-openMenu();initSession();
+window.__gz={sync:function(){syncNow()},apiok:function(){return apiOK},sent:function(){return sentS},canc:function(){return canCount()},prof:function(){return JSON.stringify(me)},ls:function(){return lscore},radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},seen:function(){return seenD.slice()},markSeen:function(k){seenD.push(k)},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
+openMenu();initSession();syncNow();
 requestAnimationFrame(loop);
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('./sw.js').catch(function(){});
 })();
