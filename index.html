@@ -47,10 +47,12 @@ h2{margin:6px 0;font-size:24px}
 .qtag{font-size:12px;letter-spacing:2px;color:#ffd27a}
 .row.me{border:1px solid #ffd27a}
 #nameScr{background:#05060f;z-index:9}
-#nameIn{width:86vw;max-width:300px;padding:13px;font-size:18px;text-align:center;border-radius:12px;border:1px solid rgba(160,180,255,.5);background:#0d1230;color:#fff;-webkit-user-select:text;user-select:text;outline:none}
-#nameErr{color:#ff8a8a;min-height:18px;font-size:13px;max-width:300px}
+#nameIn,#admIn{width:86vw;max-width:300px;padding:13px;font-size:18px;text-align:center;border-radius:12px;border:1px solid rgba(160,180,255,.5);background:#0d1230;color:#fff;-webkit-user-select:text;user-select:text;outline:none}
+#nameErr,#admErr,#rstErr{color:#ff8a8a;min-height:18px;font-size:13px;max-width:300px}
 .rst{position:absolute;top:10px;right:10px;width:auto;max-width:none;padding:6px 10px;font-size:12px;border-radius:10px;border:1px solid rgba(160,180,255,.3);background:rgba(40,50,100,.35);color:#e8ecff;opacity:.75}
-#confirmScr{background:rgba(5,6,15,.96);z-index:10}
+#confirmScr,#admScr,#admPanel{background:rgba(5,6,15,.97);z-index:10}
+.adm{position:absolute;top:10px;left:10px;width:auto;max-width:none;padding:6px 10px;font-size:11px;border-radius:10px;border:1px solid rgba(160,180,255,.2);background:rgba(40,50,100,.2);color:#e8ecff;opacity:.3}
+.del{width:auto;max-width:none;padding:6px 10px;font-size:12px;margin-left:8px;flex:none;border-radius:10px;background:#a32d2d;border:1px solid #e06a6a;color:#fff}
 .btn.danger{background:#a32d2d;border-color:#e06a6a}
 </style>
 </head>
@@ -59,6 +61,7 @@ h2{margin:6px 0;font-size:24px}
 
 <div id="menu" class="screen">
   <div class="logo">GEZEGEN<br>BİRLEŞTİR</div>
+  <button class="adm" id="bAdm">Yönetici</button>
   <button class="rst" id="bReset">Sıfırla</button>
   <div class="sub" id="whoTxt" style="color:#ffd27a;font-weight:700"></div>
   <div class="sub" id="bestTxt"></div>
@@ -94,7 +97,27 @@ h2{margin:6px 0;font-size:24px}
   <h2>Emin misin?</h2>
   <div class="sub" style="max-width:300px;line-height:1.5">Puanın, oyundaki ilerlemen ve açtığın gezegenler silinecek. Adın kalır. Bu işlem geri alınamaz.</div>
   <button class="btn danger" id="rstYes">Evet, hepsini sil</button>
+  <button class="btn danger" id="rstName">Sıfırla ve adımı değiştir</button>
+  <div id="rstErr"></div>
   <button class="btn" id="rstNo">Vazgeç</button>
+  <div class="tiny">"Adımı değiştir" seçersen eski adın serbest kalır ve yeni bir ad seçersin. İnternet gerekir.</div>
+</div>
+
+<div id="admScr" class="screen" hidden>
+  <h2>Yönetici</h2>
+  <input id="admIn" type="password" autocomplete="off" placeholder="Şifre">
+  <div id="admErr"></div>
+  <button class="btn pri" id="admOk">Giriş</button>
+  <button class="btn" id="admNo">Vazgeç</button>
+</div>
+
+<div id="admPanel" class="screen" hidden>
+  <h2>Yönetici paneli</h2>
+  <div class="sub" id="admMsg"></div>
+  <button class="btn pri" id="admList">Tabloyu aç (ad silme)</button>
+  <button class="btn danger" id="admClear">Tüm tabloyu sil</button>
+  <button class="btn" id="admOut">Çıkış</button>
+  <div class="tiny">Tüm tabloyu silersen herkes yeni ad seçmek zorunda kalır.</div>
 </div>
 
 <div id="board" class="screen" hidden>
@@ -186,7 +209,7 @@ function newGame(m){
   cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=0;lscore=0;
   hideAll();
 }
-function hideAll(){$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true;$('quiz').hidden=true;$('board').hidden=true}
+function hideAll(){$('admScr').hidden=true;$('admPanel').hidden=true;$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true;$('quiz').hidden=true;$('board').hidden=true}
 
 /* ---------- Ses (Web Audio, dosyasız) ---------- */
 var AC=null,mg,sg,mu,arpBus,delay,musicOn=false,nextT=0,beat=0;
@@ -538,9 +561,9 @@ function loadProf(){
 var me=loadProf(),boardDirty=false,lastSave=0,sessName=me?me.n:'';
 /* ---------- Ortak tablo (sunucu) ---------- */
 var API='https://gezegen-api.gezegen-birlestir.workers.dev';
-var apiOK=false,sentS=0,syncBusy=false,lastSyncAt=0,topCache=null,myRank=0,regBusy=false;
+var adminKey=null,admFromPanel=false,apiOK=false,sentS=0,syncBusy=false,lastSyncAt=0,topCache=null,myRank=0,regBusy=false;
 function nk(x){var y=x;try{y=x.toLocaleLowerCase('tr-TR')}catch(e){y=x.toLowerCase()}return y.replace(/ı/g,'i').replace(/\s+/g,' ').trim()}
-function api(path,body,cb,ka){
+function api(path,body,cb,ka,hdr){
   var done=false,to=null,ctl=null;
   function fin(err,j,st){if(done)return;done=true;if(to)clearTimeout(to);cb(err,j,st)}
   if(typeof fetch!=='function'){fin(true);return}
@@ -548,6 +571,7 @@ function api(path,body,cb,ka){
   to=setTimeout(function(){if(ctl){try{ctl.abort()}catch(e){}}fin(true)},9000);
   var opt={method:body?'POST':'GET',cache:'no-store'};
   if(body){opt.headers={'content-type':'application/json'};opt.body=JSON.stringify(body)}
+  if(hdr){opt.headers=opt.headers||{};for(var hk in hdr)opt.headers[hk]=hdr[hk]}
   if(ctl)opt.signal=ctl.signal;
   if(ka)opt.keepalive=true;
   try{
@@ -658,14 +682,16 @@ function initSession(){
   }
   showName();
 }
-function rowEl(rank,name,score,isMe,sub){
+function rowEl(rank,name,score,isMe,sub,onDel){
   var row=document.createElement('div');row.className='row'+(isMe?' me':'');
   var rk=document.createElement('b');rk.textContent=rank?rank+'.':'';rk.style.width='34px';
   var mid=document.createElement('div');mid.style.flex='1';
   var nm=document.createElement('b');nm.textContent=name+(isMe?' (sen)':'');mid.appendChild(nm);
   if(sub){var dt=document.createElement('p');dt.textContent=sub;mid.appendChild(dt)}
   var sc2=document.createElement('b');sc2.textContent=score;sc2.style.color='#ffd27a';
-  row.appendChild(rk);row.appendChild(mid);row.appendChild(sc2);return row;
+  row.appendChild(rk);row.appendChild(mid);row.appendChild(sc2);
+  if(onDel){var db=document.createElement('button');db.className='del';db.textContent='Sil';db.onclick=onDel;row.appendChild(db)}
+  return row;
 }
 function buildBoard(){
   saveBoard();
@@ -673,7 +699,7 @@ function buildBoard(){
   var msg=document.createElement('div');msg.className='tiny';msg.style.maxWidth='none';msg.textContent='Tablo yükleniyor…';list.appendChild(msg);
   var req=(buildBoard.n=(buildBoard.n||0)+1);
   syncNow();
-  api('/top?n=50',null,function(err,j,st){
+  api('/top?n='+(adminKey?100:50),null,function(err,j,st){
     if(req!==buildBoard.n||$('board').hidden)return;
     list.innerHTML='';
     var arr=null,note='';
@@ -681,10 +707,10 @@ function buildBoard(){
     else{apiOK=false;if(topCache){arr=topCache;note='Tablo yüklenemedi. Son görülen tablo gösteriliyor.'}else note='Tablo yüklenemedi. İnterneti kontrol edip tekrar dene.'}
     var act=(mode==='normal'&&!sunum&&(state==='paused'||state==='play'||state==='quiz'||state==='info'));
     var mk=me?nk(me.n):'',found=false;
-    if(arr)arr.slice(0,50).forEach(function(e,i){
+    if(arr)arr.slice(0,adminKey?100:50).forEach(function(e,i){
       if(!e||typeof e.name!=='string')return;
       var isMe=nk(e.name)===mk;if(isMe)found=true;
-      list.appendChild(rowEl(i+1,e.name,e.score|0,isMe,isMe&&act?'şu an: '+score:''));
+      list.appendChild(rowEl(i+1,e.name,e.score|0,isMe,isMe&&act?'şu an: '+score:'',adminKey?function(){admDelete(e.name)}:null));
     });
     if(me&&!found){
       var sep=document.createElement('div');sep.className='tiny';sep.style.maxWidth='none';sep.textContent=myRank>0?'Senin sıran: '+myRank:'';
@@ -779,15 +805,27 @@ function answerQ(oi){
 function closeQ(){$('quiz').hidden=true;eduT=0;eduNext=nextQTime();lastDrop=t;state='play'}
 function setEduTxt(){$('bEdu').textContent='Eğitim Modu: '+(eduOn?'Açık':'Kapalı')}
 
-function doReset(){
-  if(me){me.s=0;me.g=null;me.pr=true}
+function doReset(cn){
+  if(me){me.s=0;me.g=null;me.pr=!cn}
   seenD=[];try{localStorage.removeItem('gz_seen2')}catch(e){}
   try{var del=[],i,k;for(i=0;i<localStorage.length;i++){k=localStorage.key(i);if(k==='gz_max2'||k==='gz_best2'||(k&&k.indexOf('gz_bd2_')===0))del.push(k)}del.forEach(function(x){localStorage.removeItem(x)})}catch(e){}
   gzMax=0;best=0;
   bodies=[];score=0;lscore=0;maxL=0;parts=[];floats=[];combo=0;danger=0;playT=0;state='menu';mode='normal';
+  if(cn){
+    me=null;sessName='';sentS=0;try{localStorage.removeItem('gz_prof')}catch(e){}
+    hideAll();$('confirmScr').hidden=true;$('toast').hidden=true;$('rstErr').textContent='';
+    showName();return;
+  }
   saveBoard(true);lastSyncAt=0;syncNow();
   hideAll();$('confirmScr').hidden=true;$('toast').hidden=true;
   openMenu();
+}
+function admDelete(name){
+  if(!adminKey||!confirm('"'+name+'" adı silinsin mi?'))return;
+  api('/admin',{action:'delete',name:name},function(err,j,st){
+    if(st===401){adminKey=null;$('board').hidden=true;$('menu').hidden=false;return}
+    buildBoard();
+  },false,{'x-admin-key':adminKey});
 }
 
 /* ---------- Gezegenler listesi ---------- */
@@ -831,12 +869,46 @@ $('bPres').onclick=function(){sunum=true;newGame('normal')};
 $('bSnd').onclick=function(){setMute(!muted)};
 $('bEdu').onclick=function(){eduOn=!eduOn;lsSet('gz_edu',eduOn?'1':'0');setEduTxt();eduT=0};
 $('qNext').onclick=closeQ;
-$('bBoard').onclick=function(){buildBoard();$('menu').hidden=true;$('board').hidden=false};
-$('boardBack').onclick=function(){$('board').hidden=true;$('menu').hidden=false};
+$('bBoard').onclick=function(){admFromPanel=false;buildBoard();$('menu').hidden=true;$('board').hidden=false};
+$('boardBack').onclick=function(){$('board').hidden=true;if(adminKey&&admFromPanel){$('admPanel').hidden=false}else{$('menu').hidden=false}};
 $('nameOk').onclick=acceptName;
-$('bReset').onclick=function(){$('confirmScr').hidden=false};
+$('bReset').onclick=function(){$('rstErr').textContent='';$('confirmScr').hidden=false};
 $('rstNo').onclick=function(){$('confirmScr').hidden=true};
-$('rstYes').onclick=doReset;
+$('rstYes').onclick=function(){doReset(false)};
+$('rstName').onclick=function(){
+  var er=$('rstErr'),bt=$('rstName');er.textContent='';
+  if(!me){doReset(true);return}
+  if(typeof navigator!=='undefined'&&navigator.onLine===false){er.textContent='Ad değiştirmek için internet gerekir.';return}
+  bt.disabled=true;
+  api('/delete',{name:me.n,token:me.tk},function(err,j,st){
+    bt.disabled=false;
+    if(err||st>=500||!j){er.textContent='Sunucuya bağlanılamadı. Tekrar dene.';return}
+    if(j.ok||st===401){doReset(true)}else er.textContent='Bir sorun oldu. Tekrar dene.';
+  });
+};
+$('bAdm').onclick=function(){$('admErr').textContent='';$('admIn').value='';$('admScr').hidden=false;setTimeout(function(){try{$('admIn').focus()}catch(e){}},150)};
+$('admNo').onclick=function(){$('admScr').hidden=true};
+function admLogin(){
+  var v=$('admIn').value,er=$('admErr');
+  if(!v){er.textContent='Şifreyi yaz.';return}
+  if(typeof navigator!=='undefined'&&navigator.onLine===false){er.textContent='İnternet gerekir.';return}
+  api('/admin',{action:'check'},function(err,j,st){
+    if(err||st>=500){er.textContent='Sunucuya bağlanılamadı.';return}
+    if(st===401||!j||!j.ok){er.textContent='Şifre yanlış.';return}
+    adminKey=v;$('admIn').value='';$('admScr').hidden=true;$('menu').hidden=true;$('admMsg').textContent='';$('admPanel').hidden=false;
+  },false,{'x-admin-key':v});
+}
+$('admOk').onclick=admLogin;
+$('admIn').addEventListener('keydown',function(e){if(e.key==='Enter')admLogin()});
+$('admOut').onclick=function(){adminKey=null;$('admPanel').hidden=true;$('menu').hidden=false};
+$('admList').onclick=function(){admFromPanel=true;$('admPanel').hidden=true;buildBoard();$('board').hidden=false};
+$('admClear').onclick=function(){
+  if(!adminKey||!confirm('TÜM tablo silinecek ve herkes yeni ad seçecek. Emin misin?')||!confirm('Bu işlem geri alınamaz. Gerçekten silinsin mi?'))return;
+  api('/admin',{action:'clear'},function(err,j,st){
+    if(st===401){adminKey=null;$('admPanel').hidden=true;$('menu').hidden=false;return}
+    $('admMsg').textContent=(!err&&j&&j.ok)?'Tablo silindi.':'Silinemedi. Tekrar dene.';
+  },false,{'x-admin-key':adminKey});
+};
 $('nameIn').addEventListener('keydown',function(e){if(e.key==='Enter')acceptName()});
 $('bAgain').onclick=function(){newGame(mode)};
 $('bMenu2').onclick=function(){state='menu';$('over').hidden=true;openMenu()};
