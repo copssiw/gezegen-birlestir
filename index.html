@@ -54,6 +54,49 @@ h2{margin:6px 0;font-size:24px}
 .adm{position:absolute;top:10px;left:10px;width:auto;max-width:none;padding:6px 10px;font-size:11px;border-radius:10px;border:1px solid rgba(160,180,255,.2);background:rgba(40,50,100,.2);color:#e8ecff;opacity:.3}
 .del{width:auto;max-width:none;padding:6px 10px;font-size:12px;margin-left:8px;flex:none;border-radius:10px;background:#a32d2d;border:1px solid #e06a6a;color:#fff}
 .btn.danger{background:#a32d2d;border-color:#e06a6a}
+
+/* --- yumusak gecisler --- */
+@keyframes scrIn{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes itemIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes planetIn{0%{opacity:0;transform:scale(.25) rotate(-14deg)}60%{opacity:1;transform:scale(1.08) rotate(2deg)}100%{opacity:1;transform:none}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes glowp{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.9;transform:scale(1.06)}}
+.screen:not([hidden]){animation:scrIn .34s cubic-bezier(.2,.8,.2,1) backwards}
+.screen:not([hidden])>*{animation:itemIn .45s cubic-bezier(.2,.8,.2,1) backwards}
+.screen:not([hidden])>*:nth-child(1){animation-delay:.03s}
+.screen:not([hidden])>*:nth-child(2){animation-delay:.07s}
+.screen:not([hidden])>*:nth-child(3){animation-delay:.11s}
+.screen:not([hidden])>*:nth-child(4){animation-delay:.15s}
+.screen:not([hidden])>*:nth-child(5){animation-delay:.19s}
+.screen:not([hidden])>*:nth-child(6){animation-delay:.23s}
+.screen:not([hidden])>*:nth-child(7){animation-delay:.27s}
+.screen:not([hidden])>*:nth-child(8){animation-delay:.31s}
+.screen:not([hidden])>*:nth-child(n+9){animation-delay:.35s}
+.btn{transition:transform .14s ease,filter .2s ease,background .2s ease}
+.btn:active{transform:scale(.96);filter:brightness(1.15)}
+.rst:active,.adm:active{transform:scale(.94)}
+/* gezegen tanitim ekrani */
+#pinfo{background:rgba(4,5,16,.97);z-index:7;justify-content:flex-start;gap:10px}
+.pbig{position:relative;width:min(230px,36vh);height:min(230px,36vh);flex:none;margin-top:8px!important;animation:planetIn .8s cubic-bezier(.2,.9,.3,1) .05s backwards!important}
+.pbig canvas{position:absolute;left:0;top:0;width:100%;height:100%;animation:floaty 5s ease-in-out 1s infinite}
+.pbig:before{content:"";position:absolute;left:8%;top:8%;right:8%;bottom:8%;border-radius:50%;background:radial-gradient(circle,rgba(120,150,255,.35),rgba(120,150,255,0) 70%);animation:glowp 4s ease-in-out infinite}
+#pName{font-size:26px;font-weight:800;color:#ffd27a;animation-delay:.45s!important}
+#pList{list-style:none;margin:0;padding:0;width:min(92vw,420px);text-align:left}
+#pList li{position:relative;padding:10px 12px 10px 34px;margin:7px 0;background:rgba(40,55,120,.35);border:1px solid rgba(160,180,255,.22);border-radius:12px;font-size:17px;line-height:1.45;animation:itemIn .5s cubic-bezier(.2,.8,.2,1) backwards}
+#pList li:before{content:"";position:absolute;left:13px;top:17px;width:9px;height:9px;border-radius:50%;background:#ffd27a;box-shadow:0 0 8px #ffd27a}
+#pinfo .btn{margin-top:6px}
+.screen:not([hidden])>#pList{animation:none}
+/* soru ekrani */
+.qpl{position:relative;width:min(170px,26vh);height:min(170px,26vh);flex:none;margin-top:6px!important;animation:planetIn .8s cubic-bezier(.2,.9,.3,1) .05s backwards!important}
+.qpl canvas{position:absolute;left:0;top:0;width:100%;height:100%;animation:floaty 5s ease-in-out 1s infinite}
+.qpl:before{content:"";position:absolute;left:8%;top:8%;right:8%;bottom:8%;border-radius:50%;background:radial-gradient(circle,rgba(120,150,255,.3),rgba(120,150,255,0) 70%);animation:glowp 4s ease-in-out infinite}
+#qMark{position:absolute;left:12%;top:12%;right:12%;bottom:12%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:60px;font-weight:800;color:#ffd27a;background:radial-gradient(circle at 35% 30%,#3a4a9a,#141a44);border:2px solid rgba(160,180,255,.45);text-shadow:0 0 18px #ffd27a;animation:floaty 4s ease-in-out infinite}
+.screen:not([hidden])>#qOpts{animation:none}
+#qOpts .btn{display:block;margin:8px auto;animation:itemIn .5s cubic-bezier(.2,.8,.2,1) backwards}
+.screen:not([hidden])>#qTag{animation-delay:.35s}
+.screen:not([hidden])>#qText{animation-delay:.5s}
+.fadein{animation:itemIn .4s ease backwards}
+@media (prefers-reduced-motion:reduce){.screen:not([hidden]),.screen:not([hidden])>*,.pbig,.qpl,.pbig canvas,.qpl canvas,#pList li,#qOpts .btn{animation:none!important}}
 </style>
 </head>
 <body>
@@ -136,7 +179,15 @@ h2{margin:6px 0;font-size:24px}
   <button class="btn pri" id="nameOk">Tamam</button>
 </div>
 
+<div id="pinfo" class="screen" hidden>
+  <div class="pbig"><canvas id="pCv" width="520" height="520"></canvas></div>
+  <div id="pName"></div>
+  <ul id="pList"></ul>
+  <button class="btn pri" id="infoClose">Kapat</button>
+</div>
+
 <div id="quiz" class="screen" hidden>
+  <div class="qpl"><canvas id="qCv" width="400" height="400"></canvas><div id="qMark" hidden>?</div></div>
   <div class="qtag" id="qTag">EĞİTİM SORUSU</div>
   <div id="qText"></div>
   <div id="qOpts"></div>
@@ -166,10 +217,14 @@ var P=[
  {n:"Jüpiter",d:"Çap: ~139.800 km",r:44,f:["En büyük gezegen, içine 1300'den fazla Dünya sığar.", "Büyük Kırmızı Leke, yüzyıllardır süren dev bir fırtınadır."]},
  {n:"Güneş",d:"Çap: ~1.392.000 km",r:52,f:["Bir yıldız. Güneş Sistemi'nin kütlesinin %99'undan fazlası onda.", "İçine yaklaşık 1,3 milyon Dünya sığar. Güneş Sistemi'nin merkezindedir ve gezegenler onun çevresinde döner."]},
  {n:"Betelgeuse",d:"Çap: Güneş'in ~700 katı",r:62,f:["Orion (Avcı) takımyıldızındaki kızıl süperdev yıldız.", "Dünya'dan yaklaşık 600 ışık yılı uzakta. Ömrünün sonuna yaklaşıyor; bir gün süpernova olarak patlaması bekleniyor."]},
- {n:"Samanyolu",d:"Çap: ~100.000 ışık yılı",r:74,f:["Bizim galaksimiz. Yüz milyarlarca yıldız içerir.", "Güneş, içindeki yıldızlardan sadece biridir. Işık bile bir ucundan öbür ucuna yaklaşık 100.000 yılda gider."]}
+ {n:"Samanyolu",d:"Çap: ~100.000 ışık yılı",r:74,f:["Bizim galaksimiz. Yüz milyarlarca yıldız içerir.", "Güneş, içindeki yıldızlardan sadece biridir. Işık bile bir ucundan öbür ucuna yaklaşık 100.000 yılda gider."]},
+ {n:"Andromeda",d:"Çap: ~220.000 ışık yılı",r:1,f:["Samanyolu'na en yakın büyük galaksi. Yaklaşık 2,5 milyon ışık yılı uzaktadır.", "Yaklaşık 1 trilyon yıldız içerir. Samanyolu ile milyarlarca yıl sonra çarpışması bekleniyor."]},
+ {n:"Kondor Galaksisi",d:"Çap: ~520.000 ışık yılı",r:1,f:["Bilinen en büyük sarmal galaksilerden biri. Çapı yaklaşık 520.000 ışık yılıdır.", "Tavus Kuşu (Pavo) takımyıldızı yönünde, yaklaşık 200 milyon ışık yılı uzaktadır."]},
+ {n:"IC 1101",d:"Çap: milyonlarca ışık yılı",r:1,f:["Bilinen en büyük galaksilerden biri; dev bir eliptik galaksidir. Çapının milyonlarca ışık yılı olduğu tahmin ediliyor.", "Yaklaşık 1 milyar ışık yılı uzaktadır. Samanyolu'ndan onlarca kat büyük olduğu tahmin ediliyor."]}
 ];
 var RS=1.5625;P.forEach(function(p){p.r=p.r*RS});
 P[7].h=.80;P[8].h=.65;
+[92,98,104,110,116].forEach(function(v,i){P[11+i].r=v});
 var NL=P.length;
 
 /* ---------- Yardımcılar ---------- */
@@ -210,7 +265,7 @@ function newGame(m){
   cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=0;lscore=0;
   hideAll();
 }
-function hideAll(){$('admScr').hidden=true;$('admPanel').hidden=true;$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true;$('quiz').hidden=true;$('board').hidden=true}
+function hideAll(){$('pinfo').hidden=true;$('admScr').hidden=true;$('admPanel').hidden=true;$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true;$('quiz').hidden=true;$('board').hidden=true}
 
 /* ---------- Ses (Web Audio, dosyasız) ---------- */
 var AC=null,mg,sg,mu,arpBus,delay,musicOn=false,nextT=0,beat=0;
@@ -346,7 +401,7 @@ function onReach(nl,fx,fy){
     if(sunum)showToast(nl,Math.floor(Math.random()*2));
     else if(un.length){var v2=un[Math.floor(Math.random()*un.length)];seenD.push(nl+':'+v2);lsSet('gz_seen2',JSON.stringify(seenD));showToast(nl,v2)}
   }
-  if(nl===NL-1&&!won){won=true;banner=5;confetti();sfxWin()}
+  if(nl===12&&!won){won=true;banner=5;confetti();sfxWin()}
 }
 function showToast(l,v){
   var p=P[l],e=$('toast'),ft=p.f[v];
@@ -356,14 +411,30 @@ function showToast(l,v){
     e.style.top=Math.round(oy+250*sc)+'px';
     e.hidden=false;toastT=5.5;sfxCard();return;
   }
-  e.className='info';e.style.top='';
-  e.innerHTML='<b>'+p.n+'</b><span class="d">'+p.d+'</span>'+ft+'<button class="btn pri" id="infoClose">Kapat</button>';
-  $('infoClose').onclick=closeInfo;
-  e.hidden=false;toastT=0;aiming=false;state='info';sfxCard();
+  showInfo(l,ft);
+}
+function sentences(t){
+  var a=t.split(/\.\s+/),o=[],i;
+  for(i=0;i<a.length;i++){var x=a[i].replace(/\s+$/,'');if(!x)continue;if(x.charAt(x.length-1)!=='.'&&x.charAt(x.length-1)!==')')x+='.';o.push(x)}
+  return o;
+}
+var bigL=-1,bigQ=-1;
+function renderBig(id,l,f){
+  var c=$(id),g=c.getContext('2d'),w=c.width;
+  g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,w,c.height);
+  drawPlanet(g,w/2,c.height/2,w*f,l,.3,performance.now()/1000);
+}
+function showInfo(l,ft){
+  var p=P[l],items=[p.d].concat(sentences(ft)),ul=$('pList'),i;
+  $('pName').textContent=p.n;ul.innerHTML='';
+  for(i=0;i<items.length;i++){var li=document.createElement('li');li.textContent=items[i];li.style.animationDelay=(.75+i*.22)+'s';ul.appendChild(li)}
+  $('infoClose').style.animationDelay=(.75+items.length*.22+.1)+'s';
+  bigL=l;aiming=false;state='info';sfxCard();
+  $('pinfo').hidden=false;$('pinfo').scrollTop=0;
 }
 function closeInfo(){
   if(state!=='info')return;
-  $('toast').hidden=true;$('toast').className='';state='play';lastDrop=t;
+  $('pinfo').hidden=true;$('toast').hidden=true;bigL=-1;state='play';lastDrop=t;
 }
 function fmtT(x){x=Math.floor(x);var m=Math.floor(x/60),y=x%60;return m+':'+(y<10?'0':'')+y}
 function gameOver(){
@@ -434,43 +505,43 @@ function drawPlanet(g,x,y,r,l,a,tm){
   switch(l){
   case 0:
     sph(g,r,'#c4bcb0','#4a463f');
-    inside(g,r,a,function(){blob(g,r*.3,-r*.2,r*.2,'rgba(0,0,0,.25)');blob(g,-r*.35,r*.3,r*.16,'rgba(0,0,0,.25)');blob(g,-r*.1,-r*.45,r*.1,'rgba(255,255,255,.9)');blob(g,r*.15,-r*.38,r*.07,'rgba(255,255,255,.85)')});
+    inside(g,r,a+tm*.08,function(){blob(g,r*.3,-r*.2,r*.2,'rgba(0,0,0,.25)');blob(g,-r*.35,r*.3,r*.16,'rgba(0,0,0,.25)');blob(g,-r*.1,-r*.45,r*.1,'rgba(255,255,255,'+(.6+.35*Math.sin(tm*3))+')');blob(g,r*.15,-r*.38,r*.07,'rgba(255,255,255,'+(.55+.35*Math.sin(tm*3+1.3))+')')});
     shade(g,r);break;
   case 1:
     sph(g,r,'#f0f0f2','#8a8a96');
-    inside(g,r,a,function(){blob(g,r*.3,-r*.25,r*.25,'rgba(0,0,0,.2)');blob(g,-r*.4,r*.2,r*.2,'rgba(0,0,0,.2)');blob(g,r*.15,r*.5,r*.14,'rgba(0,0,0,.2)');blob(g,-r*.1,-r*.55,r*.12,'rgba(0,0,0,.2)')});
+    inside(g,r,a+tm*.06,function(){blob(g,r*.3,-r*.25,r*.25,'rgba(0,0,0,.2)');blob(g,-r*.4,r*.2,r*.2,'rgba(0,0,0,.2)');blob(g,r*.15,r*.5,r*.14,'rgba(0,0,0,.2)');blob(g,-r*.1,-r*.55,r*.12,'rgba(0,0,0,.2)')});
     shade(g,r);break;
   case 2:
     sph(g,r,'#cdbfae','#5a4c40');
-    inside(g,r,a,function(){blob(g,r*.3,-r*.25,r*.22,'rgba(0,0,0,.25)');blob(g,-r*.4,r*.2,r*.18,'rgba(0,0,0,.25)');blob(g,r*.1,r*.5,r*.14,'rgba(0,0,0,.25)');blob(g,-r*.15,-r*.5,r*.12,'rgba(0,0,0,.22)');blob(g,r*.55,r*.1,r*.1,'rgba(0,0,0,.22)')});
-    shade(g,r);break;
+    inside(g,r,a+tm*.08,function(){blob(g,r*.3,-r*.25,r*.22,'rgba(0,0,0,.25)');blob(g,-r*.4,r*.2,r*.18,'rgba(0,0,0,.25)');blob(g,r*.1,r*.5,r*.14,'rgba(0,0,0,.25)');blob(g,-r*.15,-r*.5,r*.12,'rgba(0,0,0,.22)');blob(g,r*.55,r*.1,r*.1,'rgba(0,0,0,.22)')});
+    shade(g,r);g.strokeStyle='rgba(255,210,150,'+(.14+.1*Math.sin(tm*2))+')';g.lineWidth=r*.05;g.beginPath();g.arc(0,0,r*.96,-2.7,-1.0);g.stroke();break;
   case 3:
     sph(g,r,'#ff9a6a','#8f2c14');
-    inside(g,r,a,function(){blob(g,-r*.3,r*.1,r*.3,'rgba(90,20,5,.35)');blob(g,r*.35,r*.35,r*.2,'rgba(90,20,5,.3)');g.fillStyle='rgba(255,255,255,.85)';g.beginPath();g.ellipse(0,-r*.95,r*.5,r*.25,0,0,TAU);g.fill()});
+    inside(g,r,a+tm*.1,function(){blob(g,-r*.3,r*.1,r*.3,'rgba(90,20,5,.35)');blob(g,r*.35,r*.35,r*.2,'rgba(90,20,5,.3)');g.fillStyle='rgba(255,255,255,.85)';g.beginPath();g.ellipse(0,-r*.95,r*.5,r*.25,0,0,TAU);g.fill()});
+    inside(g,r,a*.4+tm*.45,function(){g.fillStyle='rgba(255,190,140,.17)';g.beginPath();g.ellipse(0,r*.2,r*1.1,r*.14,.2,0,TAU);g.fill()});
     shade(g,r);break;
   case 4:
     sph(g,r,'#fff1b8','#b9742a');
-    inside(g,r,a*.2,function(){for(k=0;k<7;k++){g.fillStyle='rgba(255,255,255,'+(k%2?.18:.1)+')';g.beginPath();g.ellipse(0,-r+k*r*.3,r*1.1,r*.12,.15,0,TAU);g.fill()}});
+    inside(g,r,a*.2+tm*.12,function(){for(k=0;k<7;k++){g.fillStyle='rgba(255,255,255,'+(k%2?.18:.1)+')';g.beginPath();g.ellipse(0,-r+k*r*.3,r*1.1,r*.12,.15,0,TAU);g.fill()}});
     shade(g,r);break;
   case 5:
     sph(g,r,'#6fc0ff','#0c3f9a');
     inside(g,r,a,function(){blob(g,-r*.3,-r*.1,r*.38,'#3fa65a');blob(g,r*.45,r*.3,r*.3,'#3fa65a');blob(g,r*.05,-r*.55,r*.2,'#4fb86a');blob(g,-r*.1,r*.55,r*.18,'#3fa65a')});
     inside(g,r,a*.5+tm*.35,function(){
-      g.fillStyle='rgba(255,255,255,.58)';
-      g.beginPath();g.ellipse(r*.2,-r*.2,r*.35,r*.1,.3,0,TAU);g.fill();
-      g.beginPath();g.ellipse(-r*.4,r*.35,r*.3,r*.09,-.2,0,TAU);g.fill();
-      g.beginPath();g.ellipse(-r*.25,-r*.6,r*.28,r*.08,.15,0,TAU);g.fill();
-      g.beginPath();g.ellipse(r*.45,r*.5,r*.22,r*.07,-.3,0,TAU);g.fill()});
+      var cl=[[.25,-.25,.2],[-.45,.3,.22],[-.3,-.6,.17],[.5,.5,.16],[.05,.1,.13],[-.7,-.1,.12]],ci,cj;
+      g.fillStyle='rgba(255,255,255,.72)';
+      for(ci=0;ci<cl.length;ci++){var c0=cl[ci];for(cj=0;cj<3;cj++){g.beginPath();g.arc((c0[0]+(cj-1)*.14)*r,(c0[1]+(cj==1?-.05:.03))*r,c0[2]*r*(cj==1?1:.75),0,TAU);g.fill()}}
+    });
     shade(g,r);break;
   case 6:
     sph(g,r,'#6f9bff','#1a2f9a');
-    inside(g,r,a*.3,function(){for(k=-3;k<=3;k++){g.fillStyle='rgba(180,210,255,'+(k%2?.2:.1)+')';g.fillRect(-r,k*r*.28-r*.08,2*r,r*.16)}blob(g,r*.25,r*.2,r*.2,'rgba(10,20,80,.4)')});
+    inside(g,r,a*.3+tm*.15,function(){for(k=-3;k<=3;k++){g.fillStyle='rgba(180,210,255,'+(k%2?.2:.1)+')';g.fillRect(-r,k*r*.28-r*.08,2*r,r*.16)}blob(g,r*.25,r*.2,r*.2,'rgba(10,20,80,.4)')});
     shade(g,r);break;
   case 7:
     var wu=1.2+Math.sin(tm*1.1)*.03;
     g.save();g.rotate(wu);g.strokeStyle='rgba(200,240,250,.6)';g.lineWidth=r*.04;g.beginPath();g.ellipse(0,0,r,r*.24,0,Math.PI,TAU);g.stroke();ringDash(g,r,r*.24,false,r,tm,'rgba(240,255,255,.8)');g.restore();
     sph(g,r*.78,'#d6fbff','#3a9eb0');
-    inside(g,r*.78,a*.2,function(){for(k=-2;k<=2;k++){g.fillStyle='rgba(255,255,255,.12)';g.fillRect(-r,k*r*.25,2*r,r*.1)}});
+    inside(g,r*.78,a*.2+tm*.1,function(){for(k=-2;k<=2;k++){g.fillStyle='rgba(255,255,255,.12)';g.fillRect(-r,k*r*.25,2*r,r*.1)}});
     shade(g,r*.78);
     g.save();g.rotate(wu);g.strokeStyle='rgba(200,240,250,.8)';g.lineWidth=r*.04;g.beginPath();g.ellipse(0,0,r,r*.24,0,0,Math.PI);g.stroke();ringDash(g,r,r*.24,true,r,tm,'rgba(240,255,255,.9)');g.restore();break;
   case 8:
@@ -478,23 +549,24 @@ function drawPlanet(g,x,y,r,l,a,tm){
     g.save();g.rotate(ws);g.strokeStyle='rgba(230,205,150,.9)';g.lineWidth=r*.1;
     g.beginPath();g.ellipse(0,0,r*.98,r*.3,0,Math.PI,TAU);g.stroke();ringDash(g,r*.98,r*.3,false,r,tm,'rgba(255,245,215,.85)');g.restore();
     sph(g,r*.62,'#f6e6b4','#a9803d');
-    inside(g,r*.62,a*.2,function(){for(k=0;k<5;k++){g.fillStyle='rgba(150,100,40,.22)';g.fillRect(-r,-r*.62+k*r*.25,2*r,r*.09)}});
+    inside(g,r*.62,a*.2+tm*.12,function(){for(k=0;k<5;k++){g.fillStyle='rgba(150,100,40,.22)';g.fillRect(-r,-r*.62+k*r*.25,2*r,r*.09)}});
     shade(g,r*.62);
     g.save();g.rotate(ws);g.strokeStyle='#ecd9a6';g.lineWidth=r*.1;g.beginPath();g.ellipse(0,0,r*.98,r*.3,0,0,Math.PI);g.stroke();
     g.strokeStyle='rgba(190,160,100,.8)';g.lineWidth=r*.05;g.beginPath();g.ellipse(0,0,r*.8,r*.24,0,0,Math.PI);g.stroke();ringDash(g,r*.98,r*.3,true,r,tm,'rgba(255,245,215,.95)');g.restore();break;
   case 9:
     sph(g,r,'#f0d4a8','#9a6a3a');
-    inside(g,r,a*.2,function(){var cs=['#c68c5a','#ecd0a4','#b4764a','#f2dcb4','#a8683e'];for(k=0;k<9;k++){g.fillStyle=cs[k%5];g.globalAlpha=.55;g.fillRect(-r,-r+k*r*.23,2*r,r*.15)}g.globalAlpha=1;g.fillStyle='#c4482a';g.beginPath();g.ellipse(r*.3,r*.28,r*.22,r*.12,0,0,TAU);g.fill()});
+    inside(g,r,a*.2+tm*.18,function(){var cs=['#c68c5a','#ecd0a4','#b4764a','#f2dcb4','#a8683e'];for(k=0;k<9;k++){g.fillStyle=cs[k%5];g.globalAlpha=.55;g.fillRect(-r,-r+k*r*.23,2*r,r*.15)}g.globalAlpha=1;g.fillStyle='#c4482a';g.beginPath();g.ellipse(r*.3,r*.28,r*.22,r*.12,0,0,TAU);g.fill()});
     shade(g,r);break;
   case 10:
     g.shadowColor='#ffb020';g.shadowBlur=r*.7+Math.sin(tm*3)*r*.1;
     sph(g,r*.92,'#fffbd0','#ff8a00');g.shadowBlur=0;
+    inside(g,r*.92,tm*.15,function(){blob(g,r*.3,-r*.2,r*.1,'rgba(170,70,0,.35)');blob(g,-r*.35,r*.25,r*.13,'rgba(170,70,0,.3)');blob(g,-r*.1,-r*.5,r*.07,'rgba(170,70,0,.3)')});
     g.save();g.rotate(tm*.3);g.strokeStyle='rgba(255,200,80,.55)';g.lineWidth=r*.05;
     for(i=0;i<14;i++){g.rotate(TAU/14);g.beginPath();g.moveTo(r*.8,0);g.lineTo(r*(.95+.05*Math.sin(tm*4+i)),0);g.stroke()}
     g.restore();break;
   case 11:
     g.shadowColor='#ff4a1a';g.shadowBlur=r*.6+Math.sin(tm*2)*r*.08;
-    sph(g,r*.92,'#ffc09a','#c42a0a');g.shadowBlur=0;
+    sph(g,r*(.92+.015*Math.sin(tm*1.6)),'#ffc09a','#c42a0a');g.shadowBlur=0;
     inside(g,r*.92,tm*.15,function(){var q=r*.92;blob(g,-q*.3,-q*.2,q*.32,'rgba(140,20,0,.35)');blob(g,q*.35,q*.25,q*.28,'rgba(255,220,170,.3)');blob(g,q*.1,-q*.55,q*.2,'rgba(255,230,190,.28)');blob(g,-q*.35,q*.4,q*.22,'rgba(140,20,0,.3)')});
     break;
   case 12:
@@ -504,6 +576,33 @@ function drawPlanet(g,x,y,r,l,a,tm){
     g.restore();
     var gr3=g.createRadialGradient(0,0,0,0,0,r*.4);gr3.addColorStop(0,'rgba(255,245,200,1)');gr3.addColorStop(1,'rgba(255,200,100,0)');g.fillStyle=gr3;disc(g,r*.4);g.fill();
     g.strokeStyle='#6a7cff';g.lineWidth=r*.03;disc(g,r*.97);g.stroke();break;
+  case 13:
+    g.fillStyle='rgba(10,12,40,.62)';disc(g,r);g.fill();
+    g.save();g.rotate(-.5);g.scale(1,.6);
+    var gh=g.createRadialGradient(0,0,0,0,0,r);gh.addColorStop(0,'rgba(255,240,200,.95)');gh.addColorStop(.2,'rgba(255,215,150,.75)');gh.addColorStop(.55,'rgba(150,170,255,.38)');gh.addColorStop(1,'rgba(80,90,200,0)');
+    g.fillStyle=gh;disc(g,r);g.fill();
+    g.rotate(tm*.12);
+    for(var am=0;am<2;am++)for(k=0;k<44;k++){var an3=k*.21+am*Math.PI,rd3=r*.95*k/44;blob(g,Math.cos(an3)*rd3,Math.sin(an3)*rd3,r*.065*(1.2-k/55),'rgba(205,218,255,'+(.8-k/62)+')')}
+    g.restore();
+    g.strokeStyle='rgba(60,40,30,.35)';g.lineWidth=r*.04;g.save();g.rotate(-.5);g.beginPath();g.ellipse(0,r*.04,r*.55,r*.1,0,Math.PI*1.1,Math.PI*1.9);g.stroke();g.restore();
+    blob(g,r*.58+Math.cos(tm*.5)*r*.04,-r*.4,r*.07,'rgba(255,235,190,.9)');
+    var gc=g.createRadialGradient(0,0,0,0,0,r*.28);gc.addColorStop(0,'rgba(255,250,225,1)');gc.addColorStop(1,'rgba(255,210,140,0)');g.fillStyle=gc;disc(g,r*.28);g.fill();
+    g.strokeStyle='rgba(150,170,255,.55)';g.lineWidth=r*.025;disc(g,r*.97);g.stroke();break;
+  case 14:
+    g.fillStyle='rgba(8,12,44,.7)';disc(g,r);g.fill();
+    g.save();g.rotate(tm*.1);
+    for(var am2=0;am2<2;am2++)for(k=0;k<50;k++){var an4=.5+k*.17+am2*Math.PI,rd4=r*(.3+.65*k/50);blob(g,Math.cos(an4)*rd4,Math.sin(an4)*rd4,r*.07*(1.15-k/62),(k%3?'rgba(150,190,255,':'rgba(230,240,255,')+(.85-k/70)+')')}
+    g.rotate(.5);g.fillStyle='rgba(255,225,170,.8)';g.beginPath();g.ellipse(0,0,r*.34,r*.09,0,0,TAU);g.fill();
+    g.restore();
+    var gk=g.createRadialGradient(0,0,0,0,0,r*.25);gk.addColorStop(0,'rgba(255,250,230,1)');gk.addColorStop(1,'rgba(255,220,150,0)');g.fillStyle=gk;disc(g,r*.25);g.fill();
+    blob(g,Math.cos(tm*.6)*r*.78,Math.sin(tm*.6)*r*.5,r*.09,'rgba(255,225,150,.95)');
+    g.strokeStyle='rgba(120,170,255,.55)';g.lineWidth=r*.025;disc(g,r*.97);g.stroke();break;
+  case 15:
+    var ge=g.createRadialGradient(0,0,0,0,0,r);ge.addColorStop(0,'rgba(255,248,215,1)');ge.addColorStop(.25,'rgba(255,205,120,.95)');ge.addColorStop(.6,'rgba(210,110,50,.7)');ge.addColorStop(1,'rgba(90,30,40,.5)');
+    g.fillStyle=ge;disc(g,r);g.fill();
+    g.fillStyle='rgba(255,255,255,'+(.1+.05*Math.sin(tm*2))+')';disc(g,r*.45);g.fill();
+    for(k=0;k<7;k++){var an5=tm*(.18+k*.03)+k*2.1,rd5=r*(.45+.09*k);blob(g,Math.cos(an5)*rd5,Math.sin(an5)*rd5*.8,r*.035,'rgba(255,240,200,.9)')}
+    g.strokeStyle='rgba(255,170,90,.5)';g.lineWidth=r*.025;disc(g,r*.97);g.stroke();break;
   }
   g.restore();
 }
@@ -780,7 +879,17 @@ var Q=[
  {l:11,v:1,z:150,q:"Betelgeuse Dünya'dan yaklaşık kaç ışık yılı uzaktadır?",o:["600","6","60.000"],a:0,e:"Betelgeuse yaklaşık 600 ışık yılı uzaktadır."},
  {l:11,v:1,z:125,q:"Betelgeuse'in bir gün nasıl patlaması bekleniyor?",o:["Süpernova olarak","Gezegen olarak","Kuyruklu yıldız olarak"],a:0,e:"Ömrünün sonunda süpernova olarak patlaması bekleniyor."},
  {l:12,v:0,z:100,q:"Samanyolu nedir?",o:["Bizim galaksimiz","Bir yıldız","Bir gezegen"],a:0,e:"Samanyolu yüz milyarlarca yıldızdan oluşan galaksimizdir."},
- {l:12,v:1,z:150,q:"Işık, Samanyolu'nun bir ucundan öbür ucuna yaklaşık kaç yılda gider?",o:["100.000 yıl","1.000 yıl","1 milyon yıl"],a:0,e:"Samanyolu'nun çapı yaklaşık 100.000 ışık yılıdır."}
+ {l:12,v:1,z:150,q:"Işık, Samanyolu'nun bir ucundan öbür ucuna yaklaşık kaç yılda gider?",o:["100.000 yıl","1.000 yıl","1 milyon yıl"],a:0,e:"Samanyolu'nun çapı yaklaşık 100.000 ışık yılıdır."},
+ {l:13,v:0,z:125,q:"Samanyolu'na en yakın büyük galaksi hangisidir?",o:["Andromeda","Sombrero Galaksisi","Girdap Galaksisi"],a:0,e:"Andromeda, Samanyolu'na en yakın büyük galaksidir."},
+ {l:13,v:0,z:150,q:"Andromeda yaklaşık kaç ışık yılı uzaktadır?",o:["2,5 milyon","250","25 milyon"],a:0,e:"Andromeda yaklaşık 2,5 milyon ışık yılı uzaktadır."},
+ {l:13,v:1,z:150,q:"Andromeda yaklaşık kaç yıldız içerir?",o:["1 trilyon","1 milyon","100 bin"],a:0,e:"Andromeda yaklaşık 1 trilyon yıldız içerir."},
+ {l:13,v:1,z:125,q:"Andromeda ile Samanyolu'nun gelecekte ne yapması bekleniyor?",o:["Milyarlarca yıl sonra çarpışması","Birbirinden uzaklaşması","Tek bir yıldıza dönüşmesi"],a:0,e:"İki galaksinin milyarlarca yıl sonra çarpışması bekleniyor."},
+ {l:14,v:0,z:125,q:"Kondor Galaksisi hangi türden bir galaksidir?",o:["Sarmal","Eliptik","Düzensiz"],a:0,e:"Kondor Galaksisi, bilinen en büyük sarmal galaksilerden biridir."},
+ {l:14,v:0,z:150,q:"Kondor Galaksisi'nin çapı yaklaşık kaç ışık yılıdır?",o:["520.000","52.000","5,2 milyon"],a:0,e:"Çapı yaklaşık 520.000 ışık yılıdır."},
+ {l:14,v:1,z:150,q:"Kondor Galaksisi hangi takımyıldızı yönündedir?",o:["Tavus Kuşu (Pavo)","Orion (Avcı)","Büyükayı"],a:0,e:"Kondor Galaksisi, Tavus Kuşu takımyıldızı yönündedir."},
+ {l:15,v:0,z:125,q:"IC 1101 ne tür bir galaksidir?",o:["Dev eliptik galaksi","Küçük sarmal galaksi","Düzensiz bulut"],a:0,e:"IC 1101 dev bir eliptik galaksidir."},
+ {l:15,v:1,z:150,q:"IC 1101 yaklaşık kaç ışık yılı uzaktadır?",o:["1 milyar","1 milyon","100 bin"],a:0,e:"IC 1101 yaklaşık 1 milyar ışık yılı uzaktadır."},
+ {l:15,v:1,z:150,q:"IC 1101'in Samanyolu'ndan ne kadar büyük olduğu tahmin ediliyor?",o:["Onlarca kat","Aynı boyutta","Yarısı kadar"],a:0,e:"IC 1101'in Samanyolu'ndan onlarca kat büyük olduğu tahmin ediliyor."}
 ];
 function pickQ(){
   var el=[],i;
@@ -796,25 +905,31 @@ function askQ(){
   qUsed.push(idx);
   var q=Q[idx],order=[0,1,2],i,j,tmp;
   for(i=2;i>0;i--){j=Math.floor(Math.random()*(i+1));tmp=order[i];order[i]=order[j];order[j]=tmp}
-  qCur={q:q,done:false};aiming=false;state='quiz';$('toast').hidden=true;
+  qCur={q:q,done:false,ready:false};aiming=false;state='quiz';$('toast').hidden=true;
+  var tl=function(x){var y=x;try{y=x.toLocaleLowerCase('tr-TR')}catch(e){y=x.toLowerCase()}return y};
+  var hide=/hangi/i.test(q.q)||tl(q.o[q.a]).indexOf(tl(P[q.l].n))>=0;
+  bigQ=hide?-1:q.l;$('qMark').hidden=!hide;$('qCv').style.display=hide?'none':'block';
   $('qTag').textContent='EĞİTİM SORUSU · '+(q.z===100?'Kolay':q.z===125?'Orta':'Zor')+' (+'+q.z+')';
   $('qText').textContent=q.q;
   var box=$('qOpts');box.innerHTML='';
-  order.forEach(function(oi){
-    var b=document.createElement('button');b.className='btn';b.textContent=q.o[oi];b.style.display='block';b.style.margin='8px auto';
+  order.forEach(function(oi,n){
+    var b=document.createElement('button');b.className='btn';b.textContent=q.o[oi];
+    b.style.animationDelay=(.85+n*.18)+'s';
     b.onclick=function(){answerQ(oi)};b.setAttribute('data-i',oi);box.appendChild(b);
   });
+  var qc=qCur;setTimeout(function(){qc.ready=true},1100);
   $('qRes').innerHTML='';$('qNext').hidden=true;$('quiz').hidden=false;
 }
 function answerQ(oi){
-  if(!qCur||qCur.done)return;qCur.done=true;
+  if(!qCur||qCur.done||!qCur.ready)return;qCur.done=true;
   var q=qCur.q,ok=oi===q.a,bs=$('qOpts').children,i;
   for(i=0;i<bs.length;i++){var v=parseInt(bs[i].getAttribute('data-i'),10);if(v===q.a)bs[i].className='btn ok';else if(v===oi)bs[i].className='btn bad'}
-  if(ok){addScore(q.z);$('qRes').innerHTML='<b>Doğru! +'+q.z+' puan</b><br>'+q.e}
-  else{addScore(-25);$('qRes').innerHTML='<b>Olmadı. −25 puan. Doğru cevap: '+q.o[q.a]+'</b><br>'+q.e}
+  if(ok){addScore(q.z);$('qRes').innerHTML='<div class="fadein"><b>Doğru! +'+q.z+' puan</b><br>'+q.e+'</div>'}
+  else{addScore(-25);$('qRes').innerHTML='<div class="fadein"><b>Olmadı. −25 puan. Doğru cevap: '+q.o[q.a]+'</b><br>'+q.e+'</div>'}
   saveBoard();$('qNext').hidden=false;
 }
-function closeQ(){$('quiz').hidden=true;eduT=0;eduNext=nextQTime();lastDrop=t;state='play'}
+function closeQ(){$('quiz').hidden=true;bigQ=-1;eduT=0;eduNext=nextQTime();lastDrop=t;state='play'}
+$('infoClose').onclick=closeInfo;
 function setEduTxt(){$('bEdu').textContent='Eğitim Modu: '+(eduOn?'Açık':'Kapalı')}
 
 function doReset(cn){
@@ -857,7 +972,7 @@ function buildList(){
 function openMenu(){
   if(state==='play'||state==='info')state='paused';
   saveBoard();
-  $('toast').hidden=true;$('toast').className='';toastT=0;
+  $('toast').hidden=true;$('toast').className='';toastT=0;$('pinfo').hidden=true;bigL=-1;
   var bd=parseInt(lsGet('gz_best2')||'0',10)||0;
   $('whoTxt').textContent=sessName?'Oyuncu: '+sessName:'';
   $('bestTxt').textContent='Rekor: '+bd+'  |  En yüksek: '+P[gzMax].n;
@@ -958,9 +1073,12 @@ window.addEventListener('keydown',function(e){
 var last=0;
 function loop(ts){
   var dt=Math.min((ts-last)/1000||0,1/30);last=ts;
-  update(dt);draw();requestAnimationFrame(loop);
+  update(dt);draw();
+  if(!$('pinfo').hidden&&bigL>=0)renderBig('pCv',bigL,.36);
+  if(!$('quiz').hidden&&bigQ>=0)renderBig('qCv',bigQ,.36);
+  requestAnimationFrame(loop);
 }
-window.__gz={dp:function(g,x,y,r,l,a,tm){drawPlanet(g,x,y,r,l,a,tm)},hit:function(l){return P[l].r*(P[l].h||1)},sync:function(){syncNow()},apiok:function(){return apiOK},sent:function(){return sentS},canc:function(){return canCount()},prof:function(){return JSON.stringify(me)},ls:function(){return lscore},radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},seen:function(){return seenD.slice()},markSeen:function(k){seenD.push(k)},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
+window.__gz={bigL:function(){return bigL},bigQ:function(){return bigQ},dp:function(g,x,y,r,l,a,tm){drawPlanet(g,x,y,r,l,a,tm)},hit:function(l){return P[l].r*(P[l].h||1)},sync:function(){syncNow()},apiok:function(){return apiOK},sent:function(){return sentS},canc:function(){return canCount()},prof:function(){return JSON.stringify(me)},ls:function(){return lscore},radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},seen:function(){return seenD.slice()},markSeen:function(k){seenD.push(k)},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
 openMenu();initSession();syncNow();
 requestAnimationFrame(loop);
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('./sw.js').catch(function(){});
