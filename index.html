@@ -896,7 +896,7 @@ var Q=[
 ];
 function pickQ(){
   var el=[],i;
-  for(i=0;i<Q.length;i++)if(seenD.indexOf(Q[i].l+':'+Q[i].v)>=0)el.push(i);
+  for(i=0;i<Q.length;i++)if(Q[i].l<=maxL&&seenD.indexOf(Q[i].l+':'+Q[i].v)>=0)el.push(i);
   if(!el.length)return -1;
   var fresh=el.filter(function(x){return qUsed.indexOf(x)<0});
   if(!fresh.length){qUsed=qUsed.filter(function(x){return el.indexOf(x)<0});fresh=el}
