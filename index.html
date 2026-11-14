@@ -201,7 +201,7 @@ h2{margin:6px 0;font-size:24px}
 (function(){
 'use strict';
 if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.ellipse){CanvasRenderingContext2D.prototype.ellipse=function(x,y,rx,ry,rot,st,en,ccw){this.save();this.translate(x,y);this.rotate(rot);this.scale(rx,ry);this.arc(0,0,1,st,en,ccw);this.restore()}}
-var W=400,H=720,L=24,R=376,FLOOR=696,LINE=140,SPAWN=110,G=1200,TAU=Math.PI*2;
+var W=400,H=720,L=24,R=376,FLOOR=696,LINE=120,SPAWN=110,G=1200,TAU=Math.PI*2;
 
 /* ---------- Gezegen verileri ---------- */
 var P=[
@@ -225,6 +225,8 @@ var P=[
 var RS=1.5625;P.forEach(function(p){p.r=p.r*RS});
 P[7].h=.80;P[8].h=.65;
 [92,98,104,110,116].forEach(function(v,i){P[11+i].r=v});
+P.forEach(function(p){p.r0=p.r});var SHR=.85;
+function setScale(k){P.forEach(function(p){p.r=p.r0*k});bodies.forEach(function(b){b.r=P[b.l].r*b.h;b.im=1/(b.r*b.r)})}
 var NL=P.length;
 
 /* ---------- Yardımcılar ---------- */
@@ -263,7 +265,7 @@ function mk(x,y,l){var h=P[l].h||1,r=P[l].r*h;return{id:++idc,x:x,y:y,vx:0,vy:0,
 
 function newGame(m){
   mode=m;rng=m==='daily'?mulberry32(parseInt(dateStr(),10)):Math.random;
-  bodies=[];score=0;combo=0;danger=0;maxL=0;won=false;banner=0;parts=[];floats=[];newRec=false;overT=0;
+  bodies=[];setScale(1);score=0;combo=0;danger=0;maxL=0;won=false;banner=0;parts=[];floats=[];newRec=false;overT=0;
   bestKey=m==='daily'?'gz_bd2_'+dateStr():'gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
   cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=0;lscore=0;
   hideAll();
@@ -348,7 +350,7 @@ function doMerge(a,c){
   addScore(5);
   floats.push({x:mx,y:my-b.r*.4,t:1,txt:'+5',c:'#ffffff'});
   burst(mx,my,'#bcd0ff',10+nl*2,120+nl*12);sfxMerge(nl,combo);
-  if(nl>maxL){maxL=nl;onReach(nl,mx,my-b.r*.4-24)}
+  if(nl>maxL){maxL=nl;if(nl>=10)setScale(SHR);onReach(nl,mx,my-b.r*.4-24)}
 }
 function physics(dt){
   var n=3,h=dt/n,i,j,k;
@@ -449,7 +451,7 @@ function gameOver(){
     $('oTime').textContent='Oynama süresi: '+fmtT(playT);
     $('oInfo').textContent=(newRec?'Yeni rekor! ':'Rekor: '+best+'. ')+'En yüksek gezegen: '+P[maxL].n+(mode==='daily'?' (Günlük)':'');
     $('over').hidden=false;
-    score=0;lscore=0;gzMax=0;lsSet('gz_max2','0');
+    score=0;lscore=0;gzMax=0;lsSet('gz_max2','0');seenD=[];try{localStorage.removeItem('gz_seen2')}catch(e){}
   }
   overT=0;
 }
@@ -748,6 +750,7 @@ function saveBoard(force){
 }
 function loadGame(g){
   try{
+    setScale((+g.ml||0)>=10?SHR:1);
     var bs=(Array.isArray(g.b)?g.b:[]).slice(0,150).filter(function(o){return o&&typeof o.x==='number'&&typeof o.y==='number'&&isFinite(o.x)&&isFinite(o.y)&&o.l>=0&&o.l<NL&&o.l===Math.floor(o.l)});
     var nb=bs.map(function(o){var q=mk(clamp(o.x,L+P[o.l].r,R-P[o.l].r),clamp(o.y,0,FLOOR-P[o.l].r),o.l);q.vx=clamp(+o.vx||0,-900,900);q.vy=clamp(+o.vy||0,-900,900);q.a=+o.a||0;q.age=1;q.touched=!!o.t;return q});
     mode='normal';rng=Math.random;
