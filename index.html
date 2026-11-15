@@ -42,6 +42,15 @@ h2{margin:6px 0;font-size:24px}
 .btn.ok{background:#1f8a4c;border-color:#3fd07a}
 .btn.bad{background:#8a2a2a;border-color:#e06a6a}
 #quiz{background:rgba(5,6,15,.96);z-index:6}
+#creator{background:rgba(5,6,15,.97);z-index:6}
+#cList{width:94vw;max-width:420px;display:flex;flex-direction:column;gap:8px;text-align:left}
+.row .cb{display:flex;gap:6px;margin-top:6px}
+.row .cb button{font-size:12px;padding:6px 10px;border-radius:9px;border:1px solid rgba(170,190,255,.5);background:rgba(60,80,170,.5);color:#fff}
+.row .cb button.sp{background:#3b6cff;border-color:#7da0ff}
+#sunBar{position:fixed;z-index:5;display:flex;gap:8px;left:0;right:0;justify-content:center;gap:12px;pointer-events:none}
+#sunBar button{pointer-events:auto}
+#sunBar button{font-size:12px;font-weight:700;padding:5px 12px;border-radius:12px;border:1px solid rgba(255,210,122,.7);background:rgba(40,50,110,.85);color:#ffd27a}
+#sunBar[hidden]{display:none}
 #qText{font-size:20px;line-height:1.35;max-width:94vw;margin:4px 0 8px}
 #qRes{font-size:14px;line-height:1.45;max-width:94vw;min-height:20px}
 .qtag{font-size:12px;letter-spacing:2px;color:#ffd27a}
@@ -195,6 +204,13 @@ h2{margin:6px 0;font-size:24px}
   <button class="btn pri" id="qNext" hidden>Devam</button>
 </div>
 
+<div id="creator" class="screen" hidden>
+  <h2>Yaratıcı</h2>
+  <div class="tiny">İstediğin gezegeni oyuna bırak ya da özelliklerine bak.</div>
+  <div id="cList"></div>
+  <button class="btn pri" id="cClose">Kapat</button>
+</div>
+<div id="sunBar" hidden><button id="sbCre">Yaratıcı</button><button id="sbExit">Çık</button></div>
 <div id="toast" hidden></div>
 
 <script>
@@ -244,7 +260,7 @@ function resize(){
   cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);
   sc=Math.min(cw/W,ch/H);ox=(cw-W*sc)/2;oy=(ch-H*sc)/2;
 }
-window.addEventListener('resize',resize);resize();
+window.addEventListener('resize',function(){resize();if(sunum)placeSun()});resize();
 
 var stars=[];for(var i=0;i<90;i++)stars.push({x:Math.random(),y:Math.random(),s:Math.random()*1.6+.4,p:Math.random()*6});
 
@@ -258,6 +274,7 @@ var muted=lsGet('gz_mute')==='1';
 var toastT=0,playT=0,lscore=0;
 
 function pick(){var r=rng();
+  if(sunum){var lo=Math.max(0,maxL-4),hi=Math.min(Math.max(3,maxL-1),10);return lo+Math.floor(Math.random()*(hi-lo+1))}
   if(mode!=='daily'&&maxL>=10)return r<.26?0:r<.48?1:r<.67?2:r<.82?3:r<.92?4:5;
   if(mode!=='daily'&&maxL>=9)return r<.3?0:r<.55?1:r<.75?2:r<.9?3:4;
   return r<.4?0:r<.7?1:r<.9?2:3}
@@ -265,12 +282,12 @@ function mk(x,y,l){var h=P[l].h||1,r=P[l].r*h;return{id:++idc,x:x,y:y,vx:0,vy:0,
 
 function newGame(m){
   mode=m;rng=m==='daily'?mulberry32(parseInt(dateStr(),10)):Math.random;
-  bodies=[];setScale(1);score=0;combo=0;danger=0;maxL=0;won=false;banner=0;parts=[];floats=[];newRec=false;overT=0;
+  bodies=[];setScale(1);lives=3;score=0;combo=0;danger=0;maxL=0;won=false;banner=0;parts=[];floats=[];newRec=false;overT=0;
   bestKey=m==='daily'?'gz_bd2_'+dateStr():'gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
   cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=0;lscore=0;
   hideAll();
 }
-function hideAll(){$('pinfo').hidden=true;$('admScr').hidden=true;$('admPanel').hidden=true;$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true;$('quiz').hidden=true;$('board').hidden=true}
+function hideAll(){$('creator').hidden=true;$('pinfo').hidden=true;$('admScr').hidden=true;$('admPanel').hidden=true;$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true;$('quiz').hidden=true;$('board').hidden=true}
 
 /* ---------- Ses (Web Audio, dosyasız) ---------- */
 var AC=null,mg,sg,mu,arpBus,delay,musicOn=false,nextT=0,beat=0;
@@ -400,10 +417,10 @@ function drop(){
 function onReach(nl,fx,fy){
   var bonus=100+50*(nl-1);addScore(bonus);floats.push({x:fx,y:fy,t:1.8,txt:'+'+bonus+' '+P[nl].n,c:'#7af0a0'});
   var first=nl>gzMax;
-  if(first){gzMax=nl;lsSet('gz_max2',''+nl)}
+  if(first&&!sunum){gzMax=nl;lsSet('gz_max2',''+nl)}
   if(nl>=1){
-    var un=[0,1].filter(function(v){return seenD.indexOf(nl+':'+v)<0});
-    if(sunum)showToast(nl,Math.floor(Math.random()*2));
+    var SD=sunum?sunSeen:seenD,un=[0,1].filter(function(v){return SD.indexOf(nl+':'+v)<0});
+    if(sunum){var v3=un.length?un[Math.floor(Math.random()*un.length)]:Math.floor(Math.random()*2);sunSeen.push(nl+':'+v3);showInfo(nl,P[nl].f[v3])}
     else if(un.length){var v2=un[Math.floor(Math.random()*un.length)];seenD.push(nl+':'+v2);lsSet('gz_seen2',JSON.stringify(seenD));showToast(nl,v2)}
   }
   if(nl===12&&!won){won=true;banner=5;confetti();sfxWin()}
@@ -423,7 +440,7 @@ function sentences(t){
   for(i=0;i<a.length;i++){var x=a[i].replace(/\s+$/,'');if(!x)continue;if(x.charAt(x.length-1)!=='.'&&x.charAt(x.length-1)!==')')x+='.';o.push(x)}
   return o;
 }
-var bigL=-1,bigQ=-1;
+var lives=3,bigL=-1,bigQ=-1,sunSeen=[],finT=0;
 function renderBig(id,l,f){
   var c=$(id),g=c.getContext('2d'),w=c.width;
   g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,w,c.height);
@@ -439,7 +456,7 @@ function showInfo(l,ft){
 }
 function closeInfo(){
   if(state!=='info')return;
-  $('pinfo').hidden=true;$('toast').hidden=true;bigL=-1;state='play';lastDrop=t;
+  $('pinfo').hidden=true;$('toast').hidden=true;bigL=-1;state=$('creator').hidden?'play':'create';lastDrop=t;
 }
 function fmtT(x){x=Math.floor(x);var m=Math.floor(x/60),y=x%60;return m+':'+(y<10?'0':'')+y}
 function gameOver(){
@@ -479,19 +496,34 @@ function update(dt){
     var dg=false;
     for(i=0;i<bodies.length;i++){var b=bodies[i];if(b.touched&&b.age>.6&&b.y-b.r<LINE){dg=true;break}}
     if(dg)danger+=dt;else danger=Math.max(0,danger-dt*2);
-    if(danger>.6)gameOver();
-    if(state==='play'&&eduOn&&!sunum){eduT+=dt;if(eduT>=eduNext)askQ()}
+    if(danger>.6)relief();
+    if(state==='play'&&(eduOn||sunum)){eduT+=dt;if(eduT>=eduNext)askQ()}
+    if(sunum&&maxL>=NL-1){finT+=dt;if(finT>6){finT=0;sunSeen=[];newGame('normal')}}
   }else if(state==='over'&&sunum){
     overT+=dt;if(overT>3)newGame('normal');
   }
 }
+function relief(){
+  if(!sunum&&maxL>=11){lives--;floats.push({x:200,y:FLOOR-100,t:2,txt:'1 CAN GİTTİ!',c:'#ff7a7a'});sfxOver();danger=-3;if(lives<=0){lives=0;gameOver()}return}
+  var cand=bodies.filter(function(b){return !b.dead&&b.touched}).sort(function(a,b){return b.y-a.y});
+  var n=Math.max(4,Math.ceil(bodies.length*.3)),tot=0,i;
+  for(i=0;i<cand.length&&i<n;i++){
+    var b=cand[i],pts=15+10*b.l;b.dead=true;tot+=pts;
+    burst(b.x,b.y,'#ffd27a',14,200);
+  }
+  bodies=bodies.filter(function(b){return !b.dead});
+  addScore(tot);floats.push({x:200,y:FLOOR-60,t:2,txt:'SIKIŞANLAR PATLADI +'+tot,c:'#ffd27a'});
+  danger=0;
+  if(!sunum){lives--;floats.push({x:200,y:FLOOR-100,t:2,txt:'1 CAN GİTTİ!',c:'#ff7a7a'});if(lives<=0){lives=0;gameOver();return}}
+  sfxWin();
+}
 function bot(dt){
   botT-=dt;
-  if(botT>0||t-lastDrop<.5)return;
+  if(botT>0||t-lastDrop<.46)return;
   var tx=null,r=P[cur].r,i;
   for(i=0;i<bodies.length;i++){var b=bodies[i];if(b.l===cur&&b.age>.5&&b.y>LINE+30){tx=b.x;break}}
   if(tx===null)tx=L+r+Math.random()*(R-L-2*r);
-  aimX=tx;drop();botT=.7+Math.random()*.6;
+  aimX=tx;drop();botT=.05+Math.random()*.1;
 }
 
 /* ---------- Çizim ---------- */
@@ -649,12 +681,13 @@ function draw(){
   g.textAlign='left';g.fillStyle='rgba(200,215,255,.7)';g.font='600 11px system-ui,sans-serif';g.fillText('PUAN',24,24);
   g.fillStyle='#fff';g.font='800 34px system-ui,sans-serif';g.fillText(score,24,56);
   g.fillStyle='rgba(200,215,255,.75)';g.font='600 12px system-ui,sans-serif';g.fillText('REKOR '+best,24,76);
+  if(!sunum){g.textAlign='right';g.font='700 18px system-ui,sans-serif';g.fillStyle='#ff6b8a';var hs='',hi;for(hi=0;hi<3;hi++)hs+=hi<lives?'♥ ':'♡ ';g.fillText(hs,376,106);g.textAlign='left'}
   g.textAlign='center';g.fillStyle='rgba(200,215,255,.7)';g.font='600 11px system-ui,sans-serif';g.fillText('SIRADAKİ',340,24);
   var k=Math.min(1,20/P[nxt].r);g.save();g.translate(340,58);g.scale(k,k);drawPlanet(g,0,0,P[nxt].r,nxt,0,t);g.restore();
   g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=2;g.beginPath();g.arc(200,48,18,0,TAU);g.stroke();
   g.fillStyle='rgba(255,255,255,.8)';g.fillRect(193,40,4,16);g.fillRect(203,40,4,16);
   g.fillStyle='rgba(255,210,122,.9)';g.font='600 11px system-ui,sans-serif';
-  if(sunum)g.fillText('SUNUM MODU - çıkmak için dokun',200,92);
+  if(sunum)g.fillText('SUNUM MODU',200,92);
   else if(mode==='daily')g.fillText('GÜNLÜK MEYDAN OKUMA',200,92);
   // afiş
   if(banner>0){
@@ -738,7 +771,7 @@ function snap(){
   if(mode!=='normal')return;
   if(state!=='play'&&state!=='paused'&&state!=='quiz'&&state!=='info')return;
   var r=function(v){return Math.round(v*10)/10};
-  me.g={v:2,pt:Math.floor(playT),ls:lscore,mo:mode,s:score,c:cur,n:nxt,ml:maxL,w:won?1:0,b:bodies.map(function(o){return{x:r(o.x),y:r(o.y),vx:r(o.vx),vy:r(o.vy),l:o.l,a:r(o.a),t:o.touched?1:0}})};
+  me.g={v:2,pt:Math.floor(playT),ls:lscore,mo:mode,s:score,c:cur,n:nxt,ml:maxL,lv:lives,w:won?1:0,b:bodies.map(function(o){return{x:r(o.x),y:r(o.y),vx:r(o.vx),vy:r(o.vy),l:o.l,a:r(o.a),t:o.touched?1:0}})};
 }
 function saveBoard(force){
   snap();
@@ -758,7 +791,7 @@ function loadGame(g){
     score=isFinite(+g.s)?Math.max(0,Math.floor(+g.s)):0;
     lscore=isFinite(+g.ls)?Math.max(0,Math.floor(+g.ls)):0;
     cur=(g.c>=0&&g.c<NL&&g.c===Math.floor(g.c))?g.c:pick();nxt=(g.n>=0&&g.n<NL&&g.n===Math.floor(g.n))?g.n:pick();
-    maxL=Math.max(0,Math.min(NL-1,Math.floor(+g.ml||0)));won=!!g.w;combo=0;danger=0;banner=0;parts=[];floats=[];newRec=false;overT=0;
+    maxL=Math.max(0,Math.min(NL-1,Math.floor(+g.ml||0)));lives=(g.lv>=1&&g.lv<=3)?Math.floor(g.lv):3;won=!!g.w;combo=0;danger=0;banner=0;parts=[];floats=[];newRec=false;overT=0;
     bestKey='gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
     lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=Math.max(0,Math.floor(+g.pt||0));hideAll();return true;
   }catch(err){return false}
@@ -846,7 +879,7 @@ window.addEventListener('online',function(){lastSyncAt=0;syncNow()});
 window.addEventListener('offline',function(){apiOK=false});
 
 /* ---------- Eğitim Modu ---------- */
-function nextQTime(){return 45+Math.random()*45}
+function nextQTime(){return sunum?25+Math.random()*15:45+Math.random()*45}
 var eduOn=lsGet('gz_edu')!=='0',eduT=0,eduNext=nextQTime(),qUsed=[],qCur=null;
 /* l: sorunun ilgili olduğu gezegen seviyesi, z: puan (zorluk) */
 var Q=[
@@ -899,7 +932,7 @@ var Q=[
 ];
 function pickQ(){
   var el=[],i;
-  for(i=0;i<Q.length;i++)if(Q[i].l<=maxL&&seenD.indexOf(Q[i].l+':'+Q[i].v)>=0)el.push(i);
+  for(i=0;i<Q.length;i++)if(Q[i].l<=maxL&&(sunum?sunSeen:seenD).indexOf(Q[i].l+':'+Q[i].v)>=0)el.push(i);
   if(!el.length)return -1;
   var fresh=el.filter(function(x){return qUsed.indexOf(x)<0});
   if(!fresh.length){qUsed=qUsed.filter(function(x){return el.indexOf(x)<0});fresh=el}
@@ -987,7 +1020,7 @@ function openMenu(){
   $('bPlay').hidden=(hasG||mainPaused);
   $('menu').hidden=false;$('over').hidden=true;
 }
-function exitSunum(){sunum=false;state='menu';bodies=[];hideAll();$('toast').hidden=true;openMenu()}
+function exitSunum(){sunum=false;$('sunBar').hidden=true;$('creator').hidden=true;setScale(1);state='menu';bodies=[];hideAll();$('toast').hidden=true;openMenu()}
 $('bPlay').onclick=function(){sunum=false;newGame('normal')};
 $('bDaily').onclick=function(){sunum=false;newGame('daily')};
 $('bCont').onclick=function(){
@@ -998,7 +1031,27 @@ $('bCont').onclick=function(){
 };
 $('bCards').onclick=function(){buildList();$('menu').hidden=true;$('cards').hidden=false};
 $('bBack').onclick=function(){$('cards').hidden=true;$('menu').hidden=false};
-$('bPres').onclick=function(){sunum=true;newGame('normal')};
+$('bPres').onclick=function(){sunum=true;sunSeen=[];finT=0;newGame('normal');$('sunBar').hidden=false;placeSun()};
+function placeSun(){var b=$('sunBar');b.style.top=Math.max(2,Math.round(oy))+'px'}
+$('sbExit').onclick=exitSunum;
+function buildCreator(){
+  var list=$('cList');list.innerHTML='';
+  for(var l=0;l<NL;l++)(function(l){
+    var row=document.createElement('div');row.className='row';
+    var c=document.createElement('canvas');c.width=112;c.height=112;row.appendChild(c);
+    var g=c.getContext('2d');g.translate(56,56);var k=46/P[l].r0;g.scale(k,k);drawPlanet(g,0,0,P[l].r0,l,.3,0);
+    var d=document.createElement('div');
+    d.innerHTML='<b>'+(l+1)+'. '+P[l].n+'</b><i>'+P[l].d+'</i>';
+    var cb=document.createElement('div');cb.className='cb';
+    var b1=document.createElement('button');b1.className='sp';b1.textContent='Oyuna bırak';
+    b1.onclick=function(){var q=mk(clamp(40+Math.random()*320,L+P[l].r+1,R-P[l].r-1),SPAWN,l);bodies.push(q);sfxDrop();b1.textContent='Bırakıldı ✓';setTimeout(function(){b1.textContent='Oyuna bırak'},700)};
+    var b2=document.createElement('button');b2.textContent='Özellikler';
+    b2.onclick=function(){showInfo(l,P[l].f.join(' '))};
+    cb.appendChild(b1);cb.appendChild(b2);d.appendChild(cb);row.appendChild(d);list.appendChild(row);
+  })(l);
+}
+$('sbCre').onclick=function(){if(state!=='play')return;state='create';aiming=false;buildCreator();$('creator').hidden=false;$('creator').scrollTop=0};
+$('cClose').onclick=function(){$('creator').hidden=true;state='play';lastDrop=t};
 $('bSnd').onclick=function(){setMute(!muted)};
 $('bEdu').onclick=function(){eduOn=!eduOn;lsSet('gz_edu',eduOn?'1':'0');setEduTxt();eduT=0};
 $('qNext').onclick=closeQ;
@@ -1053,7 +1106,7 @@ function wx(e){return(pt(e).clientX-ox)/sc}
 function wy(e){return(pt(e).clientY-oy)/sc}
 function onDown(e){
   var x=wx(e),y=wy(e);
-  if(sunum){exitSunum();return}
+  if(sunum)return;
   if(Math.hypot(x-200,y-48)<28){openMenu();return}
   if(state==='play'){aiming=true;aimX=x;if(e.pointerId!=null){try{cv.setPointerCapture(e.pointerId)}catch(_){}}}
 }
@@ -1084,7 +1137,7 @@ function loop(ts){
   if(!$('quiz').hidden&&bigQ>=0)renderBig('qCv',bigQ,.36);
   requestAnimationFrame(loop);
 }
-window.__gz={pk:function(){return pick()},setMax:function(v){maxL=v},bigL:function(){return bigL},bigQ:function(){return bigQ},dp:function(g,x,y,r,l,a,tm){drawPlanet(g,x,y,r,l,a,tm)},hit:function(l){return P[l].r*(P[l].h||1)},sync:function(){syncNow()},apiok:function(){return apiOK},sent:function(){return sentS},canc:function(){return canCount()},prof:function(){return JSON.stringify(me)},ls:function(){return lscore},radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},seen:function(){return seenD.slice()},markSeen:function(k){seenD.push(k)},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
+window.__gz={lives:function(){return lives},upd:update,relief:relief,sunn:function(){return sunum},nb:function(){return bodies.length},pk:function(){return pick()},setMax:function(v){maxL=v},bigL:function(){return bigL},bigQ:function(){return bigQ},dp:function(g,x,y,r,l,a,tm){drawPlanet(g,x,y,r,l,a,tm)},hit:function(l){return P[l].r*(P[l].h||1)},sync:function(){syncNow()},apiok:function(){return apiOK},sent:function(){return sentS},canc:function(){return canCount()},prof:function(){return JSON.stringify(me)},ls:function(){return lscore},radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},seen:function(){return seenD.slice()},markSeen:function(k){seenD.push(k)},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
 openMenu();initSession();syncNow();
 requestAnimationFrame(loop);
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('./sw.js').catch(function(){});
