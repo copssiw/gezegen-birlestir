@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "dev.workers.gezegen_birlestir.gezegen_birlestir.twa",
+    "sha256_cert_fingerprints": ["C1:23:4C:7C:27:A5:D8:8D:3E:2F:CF:95:F1:CD:E6:3D:8C:1C:C8:87:2B:36:DE:98:AF:76:C6:92:B4:74:47:89"]
+  }
+}]
