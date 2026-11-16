@@ -492,7 +492,7 @@ function update(dt){
   if(state==='play'){
     if(sunum)bot(dt);
     playT+=dt;
-    physics(dt);
+    physics(dt);squeeze(dt);
     var dg=false;
     for(i=0;i<bodies.length;i++){var b=bodies[i];if(b.touched&&b.age>.6&&b.y-b.r<LINE){dg=true;break}}
     if(dg)danger+=dt;else danger=Math.max(0,danger-dt*2);
@@ -503,19 +503,51 @@ function update(dt){
     overT+=dt;if(overT>3)newGame('normal');
   }
 }
-function relief(){
-  if(!sunum&&maxL>=11){lives--;floats.push({x:200,y:FLOOR-100,t:2,txt:'1 CAN GİTTİ!',c:'#ff7a7a'});sfxOver();danger=-3;if(lives<=0){lives=0;gameOver()}return}
-  var cand=bodies.filter(function(b){return !b.dead&&b.touched}).sort(function(a,b){return b.y-a.y});
-  var n=Math.max(4,Math.ceil(bodies.length*.3)),tot=0,i;
-  for(i=0;i<cand.length&&i<n;i++){
-    var b=cand[i],pts=15+10*b.l;b.dead=true;tot+=pts;
-    burst(b.x,b.y,'#ffd27a',14,200);
+var SQTH=.3,SQT=.3,sqMax=0;
+function squeeze(dt){
+  var i,j,a,c,dx,dy,md,d,pen,tot=0,hit=false,n=bodies.length;
+  for(i=0;i<n;i++)bodies[i].pen=0;
+  for(i=0;i<n;i++){
+    a=bodies[i];
+    for(j=i+1;j<n;j++){
+      c=bodies[j];dx=c.x-a.x;dy=c.y-a.y;md=a.r+c.r;
+      if(Math.abs(dx)>md||Math.abs(dy)>md)continue;
+      d=Math.sqrt(dx*dx+dy*dy);if(d>=md)continue;
+      pen=(md-d)/Math.min(a.r,c.r);
+      if(a.age>.6&&c.age>.6&&pen>sqMax)sqMax=pen;
+      if(a.r<=c.r){if(pen>a.pen)a.pen=pen}else if(pen>c.pen)c.pen=pen;
+    }
   }
-  bodies=bodies.filter(function(b){return !b.dead});
+  for(i=0;i<n;i++){
+    a=bodies[i];
+    if(a.pen>SQTH&&a.age>.6&&a.sc>=1)a.sq=(a.sq||0)+dt;else a.sq=Math.max(0,(a.sq||0)-dt*2);
+    if(a.sq>SQT||a.x<L-30||a.x>R+30||a.y>FLOOR+30){
+      a.dead=true;var pts=15+10*a.l;tot+=pts;burst(a.x,a.y,'#ffd27a',14,200);hit=true;
+    }
+  }
+  if(hit){
+    bodies=bodies.filter(function(b){return !b.dead});
+    addScore(tot);floats.push({x:200,y:FLOOR-60,t:1.6,txt:'SIKIŞANLAR PATLADI +'+tot,c:'#ffd27a'});
+    sfxMerge(3,1);
+  }
+}
+function relief(){
+  var tot=0,i,b;
+  if(!sunum){
+    lives--;danger=-3;
+    for(i=0;i<bodies.length;i++){b=bodies[i];if(!b.dead&&b.l<=2){b.dead=true;tot+=15+10*b.l;burst(b.x,b.y,'#ffd27a',14,200)}}
+    bodies=bodies.filter(function(q){return !q.dead});
+    floats.push({x:200,y:FLOOR-100,t:2,txt:'1 CAN GİTTİ!',c:'#ff7a7a'});
+    if(tot){addScore(tot);floats.push({x:200,y:FLOOR-60,t:2,txt:'KÜÇÜKLER PATLADI +'+tot,c:'#ffd27a'})}
+    if(lives<=0){lives=0;gameOver();return}
+    sfxOver();return;
+  }
+  var cand=bodies.filter(function(q){return !q.dead&&q.touched}).sort(function(x,y){return y.y-x.y});
+  var n=Math.max(4,Math.ceil(bodies.length*.3));
+  for(i=0;i<cand.length&&i<n;i++){b=cand[i];b.dead=true;tot+=15+10*b.l;burst(b.x,b.y,'#ffd27a',14,200)}
+  bodies=bodies.filter(function(q){return !q.dead});
   addScore(tot);floats.push({x:200,y:FLOOR-60,t:2,txt:'SIKIŞANLAR PATLADI +'+tot,c:'#ffd27a'});
-  danger=0;
-  if(!sunum){lives--;floats.push({x:200,y:FLOOR-100,t:2,txt:'1 CAN GİTTİ!',c:'#ff7a7a'});if(lives<=0){lives=0;gameOver();return}}
-  sfxWin();
+  danger=0;sfxWin();
 }
 function bot(dt){
   botT-=dt;
@@ -1137,7 +1169,7 @@ function loop(ts){
   if(!$('quiz').hidden&&bigQ>=0)renderBig('qCv',bigQ,.36);
   requestAnimationFrame(loop);
 }
-window.__gz={lives:function(){return lives},upd:update,relief:relief,sunn:function(){return sunum},nb:function(){return bodies.length},pk:function(){return pick()},setMax:function(v){maxL=v},bigL:function(){return bigL},bigQ:function(){return bigQ},dp:function(g,x,y,r,l,a,tm){drawPlanet(g,x,y,r,l,a,tm)},hit:function(l){return P[l].r*(P[l].h||1)},sync:function(){syncNow()},apiok:function(){return apiOK},sent:function(){return sentS},canc:function(){return canCount()},prof:function(){return JSON.stringify(me)},ls:function(){return lscore},radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},seen:function(){return seenD.slice()},markSeen:function(k){seenD.push(k)},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
+window.__gz={sqmax:function(v){if(v!==undefined)sqMax=v;return sqMax},sqth:function(v){SQTH=v},lives:function(){return lives},upd:update,relief:relief,sunn:function(){return sunum},nb:function(){return bodies.length},pk:function(){return pick()},setMax:function(v){maxL=v},bigL:function(){return bigL},bigQ:function(){return bigQ},dp:function(g,x,y,r,l,a,tm){drawPlanet(g,x,y,r,l,a,tm)},hit:function(l){return P[l].r*(P[l].h||1)},sync:function(){syncNow()},apiok:function(){return apiOK},sent:function(){return sentS},canc:function(){return canCount()},prof:function(){return JSON.stringify(me)},ls:function(){return lscore},radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},seen:function(){return seenD.slice()},markSeen:function(k){seenD.push(k)},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
 openMenu();initSession();syncNow();
 requestAnimationFrame(loop);
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('./sw.js').catch(function(){});
