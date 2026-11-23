@@ -238,7 +238,7 @@ var P=[
  {n:"IC 1101",d:"Çap: milyonlarca ışık yılı",r:1,f:["Bilinen en büyük galaksilerden biri; dev bir eliptik galaksidir. Çapının milyonlarca ışık yılı olduğu tahmin ediliyor.", "Yaklaşık 1 milyar ışık yılı uzaktadır. Samanyolu'ndan onlarca kat büyük olduğu tahmin ediliyor."]}
 ];
 var RS=1.5625;P.forEach(function(p){p.r=p.r*RS});
-P[7].h=.80;P[8].h=.65;P[13].h=.72;P[14].h=.86;
+P[7].h=.80;P[8].h=.65;P[13].h=.95;P[14].h=.95;
 [92,98,104,110,116].forEach(function(v,i){P[11+i].r=v});
 P.forEach(function(p){p.r0=p.r});var SHR=.85;
 function setScale(k){P.forEach(function(p){p.r=p.r0*k});bodies.forEach(function(b){b.r=P[b.l].r*b.h;b.im=1/(b.r*b.r)})}
@@ -660,33 +660,37 @@ function drawPlanet(g,x,y,r,l,a,tm){
     g.save();g.rotate(tm*.12);var sx=Math.cos(2.1)*r*.62,sy=Math.sin(2.1)*r*.62;blob(g,sx,sy,r*.04,'rgba(255,235,120,1)');g.strokeStyle='rgba(255,235,120,'+(.5+.4*Math.sin(tm*3))+')';g.lineWidth=r*.014;g.beginPath();g.arc(sx,sy,r*.075+Math.sin(tm*3)*r*.01,0,TAU);g.stroke();g.restore();
     break;
   case 13:
-    g.save();g.rotate(-.6);
-    var gh=g.createRadialGradient(0,0,0,0,0,r);gh.addColorStop(0,'rgba(255,225,170,.95)');gh.addColorStop(.25,'rgba(215,150,200,.55)');gh.addColorStop(.65,'rgba(120,100,230,.3)');gh.addColorStop(1,'rgba(70,60,190,0)');
-    g.save();g.scale(1,.4);g.fillStyle=gh;disc(g,r);g.fill();g.restore();
-    g.strokeStyle='rgba(25,10,40,.3)';g.lineWidth=r*.03;g.beginPath();g.ellipse(0,0,r*.5,r*.5*.4,0,0,TAU);g.stroke();g.beginPath();g.ellipse(0,0,r*.74,r*.74*.4,0,0,TAU);g.stroke();
-    g.globalCompositeOperation='lighter';
-    var rb=[.38,.62,.86];
-    for(k=0;k<150;k++){var bd=rb[k%3],fq=bd+(hs(k)-.5)*.13,sp=.55/Math.sqrt(fq),aq=hs(k*5+1)*TAU+tm*sp*.6,tw=.5+.5*Math.sin(tm*2+k);
-      g.fillStyle=(k%3==1?'rgba(190,180,255,':(k%5==0?'rgba(255,255,255,':'rgba(255,175,220,'))+(.5+.45*tw)+')';
-      g.beginPath();g.arc(Math.cos(aq)*r*fq,Math.sin(aq)*r*fq*.4,r*.018,0,TAU);g.fill()}
-    g.globalCompositeOperation='source-over';
-    var gc=g.createRadialGradient(0,0,0,0,0,r*.22);gc.addColorStop(0,'rgba(255,250,215,'+(.9+.1*Math.sin(tm*2))+')');gc.addColorStop(1,'rgba(255,200,130,0)');g.fillStyle=gc;disc(g,r*.22);g.fill();
+    var gh=g.createRadialGradient(0,0,0,0,0,r);gh.addColorStop(0,'rgba(255,228,175,.97)');gh.addColorStop(.2,'rgba(240,160,205,.78)');gh.addColorStop(.55,'rgba(145,100,235,.66)');gh.addColorStop(.9,'rgba(85,60,205,.5)');gh.addColorStop(1,'rgba(60,40,170,0)');
+    g.fillStyle=gh;disc(g,r);g.fill();
+    g.strokeStyle='rgba(20,5,40,.38)';g.lineWidth=r*.035;[.46,.69].forEach(function(f){g.beginPath();g.arc(0,0,r*f,0,TAU);g.stroke()});
+    var rb=[.34,.58,.8],rc=['rgba(255,175,220,.85)','rgba(190,175,255,.8)','rgba(255,175,220,.7)'];
+    for(k=0;k<3;k++){g.strokeStyle=rc[k];g.lineWidth=r*(.055-.01*k);g.beginPath();g.arc(0,0,r*rb[k],0,TAU);g.stroke()}
+    g.save();g.globalCompositeOperation='lighter';
+    for(k=0;k<170;k++){var bd=rb[k%3],fq=bd+(hs(k)-.5)*.12,sp=.6/Math.sqrt(fq),aq=hs(k*5+1)*TAU+tm*sp*.6,tw=.5+.5*Math.sin(tm*2+k);
+      g.fillStyle=(k%3==1?'rgba(200,190,255,':(k%5==0?'rgba(255,255,255,':'rgba(255,185,225,'))+(.55+.4*tw)+')';
+      g.beginPath();g.arc(Math.cos(aq)*r*fq,Math.sin(aq)*r*fq,r*.02,0,TAU);g.fill()}
     g.restore();
-    var m1=tm*.35;blob(g,Math.cos(m1)*r*.62,Math.sin(m1)*r*.62*.7+r*.15,r*.06,'rgba(255,235,200,.95)');
-    var m2=tm*.22+2.4;g.save();g.translate(Math.cos(m2)*r*.78,Math.sin(m2)*r*.78*.75);g.rotate(.5);g.fillStyle='rgba(215,222,255,.55)';g.beginPath();g.ellipse(0,0,r*.12,r*.06,0,0,TAU);g.fill();g.restore();
+    var gc=g.createRadialGradient(0,0,0,0,0,r*.24);gc.addColorStop(0,'rgba(255,252,220,'+(.92+.08*Math.sin(tm*2))+')');gc.addColorStop(1,'rgba(255,200,130,0)');g.fillStyle=gc;disc(g,r*.24);g.fill();
+    var m1=tm*.4;blob(g,Math.cos(m1)*r*.7,Math.sin(m1)*r*.7,r*.075,'rgba(255,240,205,.97)');
+    var m2=tm*.4+3.3;g.save();g.translate(Math.cos(m2)*r*.72,Math.sin(m2)*r*.72);g.rotate(m2+1.57);g.fillStyle='rgba(225,230,255,.75)';g.beginPath();g.ellipse(0,0,r*.12,r*.06,0,0,TAU);g.fill();g.restore();
     break;
   case 14:
-    g.save();g.rotate(tm*.1);g.globalCompositeOperation='lighter';
+    var gk0=g.createRadialGradient(0,0,0,0,0,r);gk0.addColorStop(0,'rgba(255,240,200,.95)');gk0.addColorStop(.18,'rgba(120,240,230,.7)');gk0.addColorStop(.6,'rgba(40,170,190,.55)');gk0.addColorStop(.92,'rgba(20,110,170,.42)');gk0.addColorStop(1,'rgba(10,80,150,0)');
+    g.fillStyle=gk0;disc(g,r);g.fill();
+    g.save();g.rotate(tm*.1);
     for(var am2=0;am2<2;am2++){
-      g.strokeStyle='rgba(60,210,200,.12)';g.lineWidth=r*.12;g.lineCap='round';g.beginPath();
-      for(k=0;k<=34;k++){var u2=k/34,a5=am2*Math.PI+.35+u2*3.1,r5=r*(.24+.72*Math.pow(u2,.8));if(k)g.lineTo(Math.cos(a5)*r5,Math.sin(a5)*r5);else g.moveTo(Math.cos(a5)*r5,Math.sin(a5)*r5)}g.stroke();
-      for(k=0;k<110;k++){var t3=k/110,an4=am2*Math.PI+.35+t3*3.1+(hs(k+am2*91)-.5)*.14,rd4=r*(.24+.72*Math.pow(t3,.8))+(hs(k*2+am2)-.5)*r*.06,tw4=.5+.5*Math.sin(tm*2.4+k*1.3);
-        g.fillStyle=(k%5==0?'rgba(235,255,250,':'rgba(110,235,225,')+((.85-t3*.45)*(.6+.4*tw4))+')';g.beginPath();g.arc(Math.cos(an4)*rd4,Math.sin(an4)*rd4,r*(.012+.013*(1-t3)),0,TAU);g.fill()}}
+      var pth=function(){g.beginPath();for(var kk=0;kk<=36;kk++){var u2=kk/36,a5=am2*Math.PI+.3+u2*3.3,r5=r*(.2+.62*Math.pow(u2,.85));if(kk)g.lineTo(Math.cos(a5)*r5,Math.sin(a5)*r5);else g.moveTo(Math.cos(a5)*r5,Math.sin(a5)*r5)}};
+      g.lineCap='round';g.strokeStyle='rgba(150,255,245,.3)';g.lineWidth=r*.19;pth();g.stroke();
+      g.strokeStyle='rgba(225,255,250,.5)';g.lineWidth=r*.07;pth();g.stroke();
+      g.globalCompositeOperation='lighter';
+      for(k=0;k<120;k++){var t3=k/120,an4=am2*Math.PI+.3+t3*3.3+(hs(k+am2*91)-.5)*.2,rd4=r*(.2+.62*Math.pow(t3,.85))+(hs(k*2+am2)-.5)*r*.08,tw4=.5+.5*Math.sin(tm*2.4+k*1.3);
+        g.fillStyle=(k%5==0?'rgba(255,255,255,':'rgba(160,255,245,')+((.9-t3*.35)*(.6+.4*tw4))+')';g.beginPath();g.arc(Math.cos(an4)*rd4,Math.sin(an4)*rd4,r*(.014+.012*(1-t3)),0,TAU);g.fill()}
+      g.globalCompositeOperation='source-over'}
     g.restore();
-    g.save();g.rotate(tm*.1+.45);var gbk=g.createLinearGradient(-r*.34,0,r*.34,0);gbk.addColorStop(0,'rgba(255,200,120,0)');gbk.addColorStop(.5,'rgba(255,220,150,.95)');gbk.addColorStop(1,'rgba(255,200,120,0)');g.fillStyle=gbk;g.beginPath();g.ellipse(0,0,r*.34,r*.07,0,0,TAU);g.fill();g.restore();
+    g.save();g.rotate(tm*.1+.45);var gbk=g.createLinearGradient(-r*.4,0,r*.4,0);gbk.addColorStop(0,'rgba(255,190,100,0)');gbk.addColorStop(.5,'rgba(255,215,140,1)');gbk.addColorStop(1,'rgba(255,190,100,0)');g.fillStyle=gbk;g.beginPath();g.ellipse(0,0,r*.4,r*.09,0,0,TAU);g.fill();g.restore();
     var gk=g.createRadialGradient(0,0,0,0,0,r*.2);gk.addColorStop(0,'rgba(255,252,230,1)');gk.addColorStop(1,'rgba(255,215,140,0)');g.fillStyle=gk;disc(g,r*.2);g.fill();
-    var ca=tm*.45,cx2=Math.cos(ca)*r*.8,cy2=Math.sin(ca)*r*.8;
-    var gcc=g.createRadialGradient(cx2,cy2,0,cx2,cy2,r*.14);gcc.addColorStop(0,'rgba(255,245,215,1)');gcc.addColorStop(.4,'rgba(255,195,100,.8)');gcc.addColorStop(1,'rgba(255,170,80,0)');g.fillStyle=gcc;g.beginPath();g.arc(cx2,cy2,r*.14,0,TAU);g.fill();
+    var ca=tm*.5,cx2=Math.cos(ca)*r*.78,cy2=Math.sin(ca)*r*.78;
+    var gcc=g.createRadialGradient(cx2,cy2,0,cx2,cy2,r*.15);gcc.addColorStop(0,'rgba(255,248,220,1)');gcc.addColorStop(.45,'rgba(255,190,90,.9)');gcc.addColorStop(1,'rgba(255,160,70,0)');g.fillStyle=gcc;g.beginPath();g.arc(cx2,cy2,r*.15,0,TAU);g.fill();
     break;
   case 15:
     var ge=g.createRadialGradient(0,0,0,0,0,r);ge.addColorStop(0,'rgba(255,248,215,1)');ge.addColorStop(.25,'rgba(255,205,120,.95)');ge.addColorStop(.6,'rgba(210,110,50,.7)');ge.addColorStop(1,'rgba(90,30,40,.5)');
