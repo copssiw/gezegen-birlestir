@@ -86,6 +86,9 @@ h2{margin:6px 0;font-size:24px}
 #win{padding-top:36px;box-sizing:border-box}
 #win>*:not(i){position:relative;z-index:1}
 #win i{position:absolute;z-index:0;top:-20px;width:9px;height:14px;border-radius:2px;opacity:.95;animation:fall linear infinite;pointer-events:none}
+#rvBox:not([hidden]){width:100%;display:flex;flex-direction:column;align-items:center;gap:6px}
+@keyframes rvPulse{0%,100%{transform:scale(1);box-shadow:0 0 14px rgba(255,200,80,.5)}50%{transform:scale(1.05);box-shadow:0 0 30px rgba(255,200,80,.95)}}
+.btn.rv{background:linear-gradient(90deg,#ffb020,#ff6a3d);border:2px solid #ffe9a8;color:#2a1200;font-size:21px;font-weight:900;letter-spacing:1px;padding:18px 14px;animation:rvPulse 1.3s ease-in-out infinite}
 @keyframes fall{to{transform:translateY(115vh) rotate(720deg)}}
 @keyframes winPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
 @keyframes winPop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
@@ -186,8 +189,12 @@ h2{margin:6px 0;font-size:24px}
   <div class="big" id="oScore">0</div>
   <div class="sub" id="oTime"></div>
   <div class="sub" id="oInfo"></div>
-  <div class="tiny" style="margin-top:0">Puan sıfırlandı, yeni oyunda 0'dan başlarsın.</div>
-  <button class="btn pri" id="bAgain">Yeniden Dene</button>
+  <div class="tiny" id="oReset" style="margin-top:0">Puan sıfırlandı, yeni oyunda 0'dan başlarsın.</div>
+  <div id="rvBox" hidden>
+    <button class="btn rv" id="bRev">★ TELAFİ HAKKI ★</button>
+    <div class="tiny" style="margin:0;color:#ffe9a8">3 soruyu da doğru bilirsen canların dolar, üstteki gezegenler patlar ve oyun kaldığın yerden devam eder. (Oyun başına 1 kez)</div>
+  </div>
+  <button class="btn pri" id="bAgain">Sıfırdan Başla</button>
   <button class="btn" id="bMenu2">Menü</button>
 </div>
 
@@ -341,7 +348,7 @@ function newGame(m){
   if(runLive&&!sunum&&score>0)histSave(won?'b':'y',score);
   runLive=!sunum;
   mode=m;rng=m==='daily'?mulberry32(parseInt(dateStr(),10)):Math.random;
-  bodies=[];$('win').hidden=true;pendWin=false;setScale(1);lives=3;rvUsed=false;rvAct=false;score=0;combo=0;danger=0;maxL=0;won=false;banner=0;parts=[];floats=[];newRec=false;overT=0;
+  bodies=[];$('win').hidden=true;pendWin=false;setScale(1);lives=3;rvUsed=false;rvAct=false;rvOffer=false;ovPend=false;score=0;combo=0;danger=0;maxL=0;won=false;banner=0;parts=[];floats=[];newRec=false;overT=0;
   bestKey=m==='daily'?'gz_bd2_'+dateStr():'gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
   cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=0;lscore=0;
   hideAll();
@@ -537,17 +544,32 @@ function closeInfo(){
   if(pendWin){pendWin=false;showWin()}
 }
 function fmtT(x){x=Math.floor(x);var m=Math.floor(x/60),y=x%60;return m+':'+(y<10?'0':'')+y}
+var rvOffer=false,ovPend=false;
+function overInfo(fs){
+  $('oScore').textContent=fs;
+  $('oTime').textContent='Oynama süresi: '+fmtT(playT);
+  var rec=newRec||fs>best;
+  $('oInfo').textContent=(rec?'Yeni rekor! ':'Rekor: '+best+'. ')+'En yüksek gezegen: '+P[maxL].n+(mode==='daily'?' (Günlük)':'');
+  $('rvBox').hidden=!rvOffer;$('oReset').hidden=rvOffer;$('over').hidden=false;
+}
+function commitOver(show){
+  var fs=score;histSave(won?'b':'e',fs);runLive=false;
+  if(fs>best){best=fs;lsSet(bestKey,''+best);newRec=true}
+  if(show)overInfo(fs);
+  score=0;lscore=0;gzMax=0;lsSet('gz_max2','0');seenD=[];try{localStorage.removeItem('gz_seen2')}catch(e){}
+}
+function finishOver(){
+  if(!ovPend)return;
+  ovPend=false;rvOffer=false;rvAct=false;
+  commitOver(false);saveBoard();pushGame(true);
+}
 function gameOver(){
-  state='over';sfxOver();saveBoard();
-  if(!sunum){
-    var fs=score;histSave(won?'b':'e',fs);runLive=false;
-    if(fs>best){best=fs;lsSet(bestKey,''+best);newRec=true}
-    $('oScore').textContent=fs;
-    $('oTime').textContent='Oynama süresi: '+fmtT(playT);
-    $('oInfo').textContent=(newRec?'Yeni rekor! ':'Rekor: '+best+'. ')+'En yüksek gezegen: '+P[maxL].n+(mode==='daily'?' (Günlük)':'');
-    $('over').hidden=false;
-    score=0;lscore=0;gzMax=0;lsSet('gz_max2','0');seenD=[];try{localStorage.removeItem('gz_seen2')}catch(e){}
+  state='over';sfxOver();
+  if(!sunum&&!rvUsed&&lives<=0&&bodies.length>0){
+    rvOffer=true;ovPend=true;saveBoard();overInfo(score);overT=0;return;
   }
+  saveBoard();
+  if(!sunum){commitOver(true);saveBoard();pushGame(true)}
   overT=0;
 }
 function burst(x,y,c,n,sp){
@@ -616,7 +638,7 @@ function relief(){
     bodies=bodies.filter(function(q){return !q.dead});
     floats.push({x:200,y:FLOOR-100,t:2,txt:'1 CAN GİTTİ!',c:'#ff7a7a'});
     if(tot){addScore(tot);floats.push({x:200,y:FLOOR-60,t:2,txt:'KÜÇÜKLER PATLADI +'+tot,c:'#ffd27a'})}
-    if(lives<=0){lives=0;if(!rvUsed){startRevive();return}gameOver();return}
+    if(lives<=0){lives=0;gameOver();return}
     sfxOver();return;
   }
   var cand=bodies.filter(function(q){return !q.dead&&q.touched}).sort(function(x,y){return y.y-x.y});
@@ -893,17 +915,62 @@ function syncNow(urgent){
   },urgent);
 }
 /* Oyun kaydını sunucuya yedekle (hesap koduyla girince kalınan yerden devam için) */
+var MAXC=54000;
+function accX(){
+  var x={b:parseInt(lsGet('gz_best2')||'0',10)||0,mu:muted?1:0,ed:eduOn?1:0,sd:seenD.slice(0,60)};
+  var bk='gz_bd2_'+dateStr(),bv=parseInt(lsGet(bk)||'0',10)||0;if(bv){x.bd={};x.bd[bk]=bv}
+  x.h=histGet().slice(0,40);
+  return x;
+}
+function accPayload(){
+  var base=me.g?me.g:{v:2,b:[]},o={},k;
+  for(k in base)o[k]=base[k];
+  o.x=accX();
+  var js=JSON.stringify(o),i;
+  if(js.length>MAXC){
+    var h=o.x.h.map(function(e){return e});
+    for(i=h.length-1;i>=0&&js.length>MAXC;i--){if(h[i].b){var c={};for(k in h[i])if(k!=='b')c[k]=h[i][k];h[i]=c;o.x.h=h;js=JSON.stringify(o)}}
+    while(js.length>MAXC&&h.length){h.pop();o.x.h=h;js=JSON.stringify(o)}
+  }
+  return {o:o,js:js};
+}
 function pushGame(urgent){
-  if(!me||!me.tk||sunum||gBusy||!apiOK)return;
+  if(!me||!me.tk||sunum||gBusy||!apiOK||rvAct)return;
   snap();
-  var js=me.g?JSON.stringify(me.g):'';
+  var pl=accPayload(),js=pl.js;
   if(js===sentG)return;
   if(!urgent&&Date.now()-sentGAt<12000)return;
   gBusy=true;sentGAt=Date.now();
-  api('/save',{name:me.n,token:me.tk,game:me.g?JSON.parse(js):null},function(err,j,st){
+  api('/save',{name:me.n,token:me.tk,game:pl.o},function(err,j,st){
     gBusy=false;
     if(!err&&j&&j.ok)sentG=js;
   },urgent);
+}
+/* Hesaba kayıtlı her şeyi (oyun, rekor, geçmiş, ayarlar) bu cihaza yükle */
+function applyAcc(g,hasBoard){
+  var x=g&&g.x;if(!x||typeof x!=='object')return;
+  try{
+    var xb=Math.floor(+x.b||0);if(xb>0&&xb>(parseInt(lsGet('gz_best2')||'0',10)||0))lsSet('gz_best2',''+xb);
+    var bk='gz_bd2_'+dateStr();if(x.bd&&typeof x.bd==='object'&&isFinite(+x.bd[bk])&&+x.bd[bk]>(parseInt(lsGet(bk)||'0',10)||0))lsSet(bk,''+Math.floor(+x.bd[bk]));
+    if(x.mu===0||x.mu===1)setMute(!!x.mu);
+    if(x.ed===0||x.ed===1){eduOn=!!x.ed;lsSet('gz_edu',eduOn?'1':'0');setEduTxt()}
+    if(hasBoard){
+      if(Array.isArray(x.sd)){seenD=x.sd.filter(function(q){return typeof q==='string'&&/^\d+:[01]$/.test(q)});lsSet('gz_seen2',JSON.stringify(seenD))}
+      gzMax=maxL;lsSet('gz_max2',''+maxL);
+    }
+    if(Array.isArray(x.h)){
+      var loc=histGet(),seen={},all=[];
+      x.h.concat(loc).forEach(function(e){
+        if(!e||typeof e!=='object'||!isFinite(+e.t)||!isFinite(+e.s)||seen[e.t])return;
+        seen[e.t]=1;
+        var c={t:+e.t,d:Math.max(0,Math.floor(+e.d||0)),s:Math.max(0,Math.floor(+e.s)),m:Math.max(0,Math.min(NL-1,Math.floor(+e.m||0))),r:(e.r==='b'||e.r==='e')?e.r:'y',k:(+e.k>0&&+e.k<=1)?+e.k:1};
+        if(Array.isArray(e.b))c.b=e.b.slice(0,150).filter(function(q){return Array.isArray(q)&&q[2]>=0&&q[2]<NL});
+        all.push(c);
+      });
+      all.sort(function(p,q){return q.t-p.t});
+      lsSet(HK,JSON.stringify(all.slice(0,40)));
+    }
+  }catch(e){}
 }
 function serverLost(){
   try{localStorage.removeItem('gz_prof')}catch(e){}
@@ -918,11 +985,11 @@ function genTok(){
 }
 function snap(){
   if(!me||sunum||rvAct)return;
-  if(state==='over'){if(mode==='normal')me.g=null;return}
+  if(state==='over'&&!ovPend){if(mode==='normal')me.g=null;return}
   if(mode!=='normal')return;
-  if(state!=='play'&&state!=='paused'&&state!=='quiz'&&state!=='info')return;
+  if(state!=='play'&&state!=='paused'&&state!=='quiz'&&state!=='info'&&!(state==='over'&&ovPend))return;
   var r=function(v){return Math.round(v*10)/10};
-  me.g={v:2,pt:Math.floor(playT),ls:lscore,mo:mode,s:score,c:cur,n:nxt,ml:maxL,lv:lives,rv:rvUsed?1:0,w:won?1:0,b:bodies.map(function(o){return{x:r(o.x),y:r(o.y),vx:r(o.vx),vy:r(o.vy),l:o.l,a:r(o.a),t:o.touched?1:0}})};
+  me.g={v:2,pt:Math.floor(playT),ls:lscore,mo:mode,s:score,c:cur,n:nxt,ml:maxL,lv:(state==='over'?1:lives),rv:rvUsed?1:0,w:won?1:0,b:bodies.map(function(o){return{x:r(o.x),y:r(o.y),vx:r(o.vx),vy:r(o.vy),l:o.l,a:r(o.a),t:o.touched?1:0}})};
 }
 function saveBoard(force){
   snap();
@@ -942,7 +1009,7 @@ function loadGame(g){
     score=isFinite(+g.s)?Math.max(0,Math.floor(+g.s)):0;
     lscore=isFinite(+g.ls)?Math.max(0,Math.floor(+g.ls)):0;
     cur=(g.c>=0&&g.c<NL&&g.c===Math.floor(g.c))?g.c:pick();nxt=(g.n>=0&&g.n<NL&&g.n===Math.floor(g.n))?g.n:pick();
-    maxL=Math.max(0,Math.min(NL-1,Math.floor(+g.ml||0)));lives=(g.lv>=1&&g.lv<=3)?Math.floor(g.lv):3;won=!!g.w;rvUsed=!!g.rv;rvAct=false;combo=0;danger=0;banner=0;parts=[];floats=[];newRec=false;overT=0;
+    maxL=Math.max(0,Math.min(NL-1,Math.floor(+g.ml||0)));lives=(g.lv>=1&&g.lv<=3)?Math.floor(g.lv):3;won=!!g.w;rvUsed=!!g.rv;rvAct=false;rvOffer=false;ovPend=false;combo=0;danger=0;banner=0;parts=[];floats=[];newRec=false;overT=0;
     bestKey='gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
     lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=Math.max(0,Math.floor(+g.pt||0));runLive=!sunum;hideAll();return true;
   }catch(err){return false}
@@ -975,7 +1042,12 @@ function acceptName(){
     if(j.ok&&j.name){
       try{localStorage.removeItem('gz_pend')}catch(x){}
       me={n:j.name,tk:tk,pr:false,s:(useCode&&isFinite(+j.best))?Math.max(0,Math.floor(+j.best)):0,d:Date.now(),g:null};sessName=me.n;sentS=me.s;apiOK=true;sentG='';
-      if(useCode&&j.game&&typeof j.game==='object'&&Array.isArray(j.game.b)&&j.game.v===2){me.g=j.game;sentG=JSON.stringify(j.game);if(loadGame(me.g))state='paused';else me.g=null}
+      if(useCode&&j.game&&typeof j.game==='object'&&Array.isArray(j.game.b)&&j.game.v===2){
+        var gx=j.game,hb=false;sentG='';
+        if(gx.b.length){me.g=gx;if(loadGame(me.g)){state='paused';hb=true}else me.g=null}
+        applyAcc(gx,hb);
+        if(me.g)delete me.g.x;
+      }
       saveBoard(true);$('nameScr').hidden=true;err.textContent='';openMenu();return;
     }
     var m={taken:'Bu ad alınmış. Başka bir ad seç.',bad:'Bu ad uygun değil. Başka bir ad seç.',chars:'Sadece harf, rakam, boşluk, nokta, tire ve alt çizgi kullan (en fazla 14 karakter).',short:'En az 2 harf yaz.'};
@@ -985,6 +1057,7 @@ function acceptName(){
   });
 }
 function initSession(){
+  sentG='';
   if(me){
     if(me.g&&loadGame(me.g))state='paused';else me.g=null;
     openMenu();return;
@@ -1222,8 +1295,8 @@ function buildHist(){
     var pl=P[Math.max(0,Math.min(NL-1,e.m|0))].n;
     row.innerHTML='<div class="hr1"><b>'+e.s+' puan</b><span class="tag '+tg[0]+'">'+tg[1]+'</span></div>'+
       '<div class="hr2">'+d.getDate()+' '+MONTHS[d.getMonth()]+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+' · Süre '+fmtT(e.d)+'<br>En yüksek gezegen: '+pl+'</div>';
-    var b=document.createElement('button');b.className='hb';b.textContent='Son halini gör';b.onclick=function(){openHView(e)};
-    row.appendChild(b);l.appendChild(row);
+    if(Array.isArray(e.b)){var b=document.createElement('button');b.className='hb';b.textContent='Son halini gör';b.onclick=function(){openHView(e)};
+    row.appendChild(b)}l.appendChild(row);
   })(a[i],i);
 }
 var hvE=null,hvRaf=0;
@@ -1275,7 +1348,7 @@ function startRevive(){
   var el=[],i,lim;
   for(lim=maxL;lim<=NL+4&&el.length<3;lim+=2){el=[];for(i=0;i<Q.length;i++)if(Q[i].l<=lim)el.push(i)}
   for(i=el.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),tmp=el[i];el[i]=el[j];el[j]=tmp}
-  if(el.length<3){gameOver();return}
+  if(el.length<3){rvUsed=true;rvOffer=false;rvAct=false;overInfo(score);return}
   rvList=el.slice(0,3);rvN=0;rvAct=true;aiming=false;$('toast').hidden=true;
   askQ(rvList[0],true);
 }
@@ -1290,7 +1363,7 @@ function reviveDone(){
     }
     if(b.y<midY||b.y-b.r<LINE+6){b.dead=true;n++;burst(b.x,b.y,'#7af0a0',12,220)}}
   bodies=bodies.filter(function(q){return !q.dead});
-  lives=3;rvUsed=true;rvAct=false;danger=-3;qCur=null;bigQ=-1;
+  lives=3;rvUsed=true;rvAct=false;rvOffer=false;ovPend=false;$('over').hidden=true;newRec=false;danger=-3;qCur=null;bigQ=-1;state='play';
   $('quiz').hidden=true;state='play';lastDrop=t;eduT=0;eduNext=nextQTime();
   floats.push({x:200,y:FLOOR-100,t:2.4,txt:'TELAFİ! CANLAR DOLDU',c:'#7af0a0'});
   sfxMerge(3,1);saveBoard(true);
@@ -1298,7 +1371,7 @@ function reviveDone(){
 function nextQ(){
   if(qCur&&qCur.rev){
     if(qCur.ok){if(rvN<3)askQ(rvList[rvN],true);else reviveDone()}
-    else{rvAct=false;$('quiz').hidden=true;qCur=null;bigQ=-1;gameOver()}
+    else{rvAct=false;rvUsed=true;rvOffer=false;$('quiz').hidden=true;qCur=null;bigQ=-1;overInfo(score)}
     return;
   }
   closeQ();
@@ -1364,11 +1437,12 @@ $('admClear').onclick=function(){
   },false,{'x-admin-key':adminKey});
 };
 $('nameIn').addEventListener('keydown',function(e){if(e.key==='Enter')acceptName()});
-$('bAgain').onclick=function(){newGame(mode)};
+$('bAgain').onclick=function(){finishOver();newGame(mode)};
+$('bRev').onclick=function(){$('over').hidden=true;startRevive()};
 $('bWinCont').onclick=function(){$('win').hidden=true;state='play';lastDrop=t};
 $('bWinNew').onclick=function(){$('win').hidden=true;newGame('normal')};
 $('bWinMenu').onclick=function(){$('win').hidden=true;if(sunum){exitSunum();return}state='menu';openMenu()};
-$('bMenu2').onclick=function(){state='menu';$('over').hidden=true;openMenu()};
+$('bMenu2').onclick=function(){finishOver();state='menu';$('over').hidden=true;openMenu()};
 setMute(muted);setEduTxt();
 
 /* ---------- Girdi ---------- */
