@@ -24,6 +24,16 @@ canvas#c{position:fixed;left:0;top:0;width:100%;height:100%;display:block}
 .btn{width:86vw;max-width:300px;padding:14px;border-radius:14px;border:1px solid rgba(160,180,255,.35);background:rgba(40,50,100,.55);color:#e8ecff;font-size:17px;font-weight:600}
 .btn.pri{background:linear-gradient(90deg,#4d6bff,#9a5cff);border-color:transparent}
 .btn:active{transform:scale(.97)}
+#hlist{width:94vw;max-width:420px;display:flex;flex-direction:column;gap:8px;text-align:left}
+#hlist .row{flex-direction:column;align-items:stretch;gap:6px}
+#hlist .hr1{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+#hlist .hr1 b{font-size:20px;color:#ffd27a}
+#hlist .hr2{font-size:13px;color:#b9c4ff;line-height:1.5}
+#hlist .tag{font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px}
+#hlist .tag.e{background:rgba(255,100,120,.25);color:#ff9aa8}#hlist .tag.b{background:rgba(120,255,160,.25);color:#8dffb0}#hlist .tag.y{background:rgba(160,170,255,.25);color:#b9c4ff}
+#hlist .hb{align-self:flex-start;font-size:13px;padding:7px 14px;border-radius:10px;border:1px solid rgba(170,190,255,.5);background:rgba(60,80,170,.5);color:#fff}
+#hview{background:rgba(3,4,12,.97);z-index:9}
+#hCv{width:min(86vw,calc((100vh - 190px)*.5555));aspect-ratio:400/720;border-radius:10px;background:#0b1030;border:1px solid rgba(160,180,255,.35)}
 #list,#blist{width:94vw;max-width:420px;display:flex;flex-direction:column;gap:8px;text-align:left}
 .row{display:flex;gap:12px;align-items:center;background:rgba(40,50,100,.4);border-radius:12px;padding:8px 10px}
 .row canvas{width:56px;height:56px;flex:none}
@@ -56,7 +66,11 @@ h2{margin:6px 0;font-size:24px}
 .qtag{font-size:12px;letter-spacing:2px;color:#ffd27a}
 .row.me{border:1px solid #ffd27a}
 #nameScr{background:#05060f;z-index:9}
-#nameIn,#admIn{width:86vw;max-width:300px;padding:13px;font-size:18px;text-align:center;border-radius:12px;border:1px solid rgba(160,180,255,.5);background:#0d1230;color:#fff;-webkit-user-select:text;user-select:text;outline:none}
+#acct{z-index:8}
+#codeIn{font-size:15px;font-family:ui-monospace,Menlo,monospace;letter-spacing:1px}
+#acCode{white-space:pre-line;font-family:ui-monospace,Menlo,monospace;font-size:20px;letter-spacing:1.5px;color:#ffd27a;background:rgba(40,50,100,.5);border-radius:12px;padding:14px 16px;word-break:break-all;text-align:center;max-width:320px;user-select:all;-webkit-user-select:all}
+.lnk{background:none;border:none;color:#9fb4ff;text-decoration:underline;font-size:14px;padding:6px}
+#nameIn,#admIn,#codeIn{width:86vw;max-width:300px;padding:13px;font-size:18px;text-align:center;border-radius:12px;border:1px solid rgba(160,180,255,.5);background:#0d1230;color:#fff;-webkit-user-select:text;user-select:text;outline:none}
 #nameErr,#admErr,#rstErr{color:#ff8a8a;min-height:18px;font-size:13px;max-width:300px}
 .rst{position:absolute;top:10px;right:10px;width:auto;max-width:none;padding:6px 10px;font-size:12px;border-radius:10px;border:1px solid rgba(160,180,255,.3);background:rgba(40,50,100,.35);color:#e8ecff;opacity:.75}
 #confirmScr,#admScr,#admPanel{background:rgba(5,6,15,.97);z-index:10}
@@ -65,6 +79,16 @@ h2{margin:6px 0;font-size:24px}
 .btn.danger{background:#a32d2d;border-color:#e06a6a}
 
 /* --- yumusak gecisler --- */
+#win{background:radial-gradient(ellipse at 50% 30%,rgba(60,45,10,.93),rgba(5,6,15,.97) 70%);z-index:9;overflow:hidden}
+#win .wt{font-size:clamp(40px,14vw,76px);font-weight:900;letter-spacing:1px;background:linear-gradient(180deg,#fff6c0,#ffc23a 55%,#ff8a1a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(255,190,60,.75));animation:winPulse 1.6s ease-in-out infinite,winPop .9s cubic-bezier(.2,1.4,.3,1) backwards}
+#win .ws{font-size:17px;max-width:320px;text-align:center;line-height:1.45;color:#ffe9b0}
+#win .wp{font-size:30px;font-weight:800;color:#ffd27a}
+#win{padding-top:36px;box-sizing:border-box}
+#win>*:not(i){position:relative;z-index:1}
+#win i{position:absolute;z-index:0;top:-20px;width:9px;height:14px;border-radius:2px;opacity:.95;animation:fall linear infinite;pointer-events:none}
+@keyframes fall{to{transform:translateY(115vh) rotate(720deg)}}
+@keyframes winPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+@keyframes winPop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
 @keyframes scrIn{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
 @keyframes itemIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 @keyframes planetIn{0%{opacity:0;transform:scale(.25) rotate(-14deg)}60%{opacity:1;transform:scale(1.08) rotate(2deg)}100%{opacity:1;transform:none}}
@@ -121,18 +145,41 @@ h2{margin:6px 0;font-size:24px}
   <button class="btn pri" id="bPlay">Başla</button>
   <button class="btn" id="bCards">Gezegenler</button>
   <button class="btn" id="bBoard">Liderlik Tablosu</button>
+  <button class="btn" id="bHist">Geçmiş</button>
+  <button class="btn" id="bAcct">Hesap Kodu</button>
   <button class="btn" id="bEdu">Eğitim Modu: Açık</button>
   <button class="btn" id="bPres">Sunum Modu</button>
   <button class="btn" id="bSnd">Ses: Açık</button>
   <div class="tiny">Parmağını kaydır (bilgisayarda fareyi gezdir), bırakınca ya da tıklayınca gezegen düşer. Aynı iki gökcismi çarpışınca bir üst seviyeye birleşir. Sıralama gerçek boyutlara göredir: Ceres'ten Samanyolu'na! Eğitim Modu açıkken yaklaşık 1 dakikada bir soru çıkar: doğru +100/125/150, yanlış −25 puan. Birleşme +5, her yeni gezegen +100'den başlayıp artan bonus verir.</div>
 </div>
 
+<div id="hist" class="screen" hidden>
+  <h2>Geçmiş</h2>
+  <div class="tiny" id="hEmpty">Henüz biten bir oturum yok.</div>
+  <div id="hlist"></div>
+  <button class="btn" id="hClear">Geçmişi Temizle</button>
+  <button class="btn pri" id="hBack">Geri</button>
+</div>
+<div id="hview" class="screen" hidden>
+  <div class="sub" id="hvTitle"></div>
+  <canvas id="hCv" width="400" height="720"></canvas>
+  <button class="btn pri" id="hvClose">Kapat</button>
+</div>
 <div id="cards" class="screen" hidden>
   <h2>Gezegenler</h2>
   <div id="list"></div>
   <button class="btn pri" id="bBack">Geri</button>
 </div>
 
+<div id="win" class="screen" hidden>
+  <div class="wt">BAŞARDIN!</div>
+  <div class="ws" id="wMsg">Tüm gezegenleri, yıldızları ve galaksileri birleştirdin. Evrenin en büyüğüne ulaştın!</div>
+  <div class="sub">Puanın</div>
+  <div class="wp" id="wScore">0</div>
+  <button class="btn pri" id="bWinCont">Oynamaya Devam Et</button>
+  <button class="btn" id="bWinNew">Yeni Oyun</button>
+  <button class="btn" id="bWinMenu">Menü</button>
+</div>
 <div id="over" class="screen" hidden>
   <h2>Elendin!</h2>
   <div class="sub">Üst sınırı aştın. Son puanın:</div>
@@ -165,7 +212,7 @@ h2{margin:6px 0;font-size:24px}
 <div id="admPanel" class="screen" hidden>
   <h2>Yönetici paneli</h2>
   <div class="sub" id="admMsg"></div>
-  <button class="btn pri" id="admList">Tabloyu aç (ad silme)</button>
+  <button class="btn pri" id="admList">Tabloyu aç (hesap kodu / ad silme)</button>
   <button class="btn danger" id="admClear">Tüm tabloyu sil</button>
   <button class="btn" id="admOut">Çıkış</button>
   <div class="tiny">Tüm tabloyu silersen herkes yeni ad seçmek zorunda kalır.</div>
@@ -182,9 +229,20 @@ h2{margin:6px 0;font-size:24px}
   <div class="logo" style="font-size:32px">KİMSİN?</div>
   <div class="sub">Bir takma ad seç.<br>Bu adı sonradan değiştiremezsin.</div>
   <input id="nameIn" maxlength="14" autocomplete="off" autocapitalize="words" placeholder="Takma adın">
+  <input id="codeIn" maxlength="48" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Hesap kodun" hidden>
   <div id="nameErr"></div>
   <div class="tiny" style="margin-top:0">Lütfen saygılı bir ad seç. Başkalarını rahatsız eden ya da kırıcı adlar yazma. Ad seçmek için internet gerekir.</div>
   <button class="btn pri" id="nameOk">Tamam</button>
+  <button class="lnk" id="codeToggle">Daha önce oynadım, hesap koduyla geri yükle</button>
+</div>
+
+<div id="acct" class="screen" hidden>
+  <h2>Hesap Kodu</h2>
+  <div class="sub" id="acName"></div>
+  <div id="acCode"></div>
+  <div class="tiny" style="margin-top:0;max-width:320px">Bu kodu bir yere not al ya da kopyala. Telefon değişir, uygulama silinir ya da veriler temizlenirse, ad ekranında "hesap koduyla geri yükle"ye basıp adını ve kodunu yazarak puanına geri dönebilirsin. Kodu kimseyle paylaşma, kodu bilen senin adınla oynayabilir.</div>
+  <button class="btn pri" id="acCopy">Kopyala</button>
+  <button class="btn" id="acBack">Geri</button>
 </div>
 
 <div id="pinfo" class="screen" hidden>
@@ -280,13 +338,15 @@ function pick(){var r=rng();
 function mk(x,y,l){var h=P[l].h||1,r=P[l].r*h;return{id:++idc,x:x,y:y,vx:0,vy:0,l:l,h:h,r:r,im:1/(r*r),a:Math.random()*TAU,age:0,touched:false,sc:1,dead:false}}
 
 function newGame(m){
+  if(runLive&&!sunum&&score>0)histSave(won?'b':'y',score);
+  runLive=!sunum;
   mode=m;rng=m==='daily'?mulberry32(parseInt(dateStr(),10)):Math.random;
-  bodies=[];setScale(1);lives=3;score=0;combo=0;danger=0;maxL=0;won=false;banner=0;parts=[];floats=[];newRec=false;overT=0;
+  bodies=[];$('win').hidden=true;pendWin=false;setScale(1);lives=3;rvUsed=false;rvAct=false;score=0;combo=0;danger=0;maxL=0;won=false;banner=0;parts=[];floats=[];newRec=false;overT=0;
   bestKey=m==='daily'?'gz_bd2_'+dateStr():'gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
   cur=pick();nxt=pick();lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=0;lscore=0;
   hideAll();
 }
-function hideAll(){$('creator').hidden=true;$('pinfo').hidden=true;$('admScr').hidden=true;$('admPanel').hidden=true;$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true;$('quiz').hidden=true;$('board').hidden=true}
+function hideAll(){$('acct').hidden=true;$('hist').hidden=true;$('hview').hidden=true;$('win').hidden=true;$('creator').hidden=true;$('pinfo').hidden=true;$('admScr').hidden=true;$('admPanel').hidden=true;$('menu').hidden=true;$('cards').hidden=true;$('over').hidden=true;$('quiz').hidden=true;$('board').hidden=true}
 
 /* ---------- Ses (Web Audio, dosyasız) ---------- */
 var AC=null,mg,sg,mu,arpBus,delay,musicOn=false,nextT=0,beat=0;
@@ -422,7 +482,24 @@ function onReach(nl,fx,fy){
     if(sunum){var v3=un.length?un[Math.floor(Math.random()*un.length)]:Math.floor(Math.random()*2);sunSeen.push(nl+':'+v3);showInfo(nl,P[nl].f[v3])}
     else if(un.length){var v2=un[Math.floor(Math.random()*un.length)];seenD.push(nl+':'+v2);lsSet('gz_seen2',JSON.stringify(seenD));showToast(nl,v2)}
   }
-  if(nl===12&&!won){won=true;banner=5;confetti();sfxWin()}
+  if(nl===NL-1&&!won){won=true;if(state==='info')pendWin=true;else showWin()}
+}
+var HK='gz_hist1',runLive=false;
+function histGet(){try{var a=JSON.parse(lsGet(HK)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function histSave(res,fs){
+  if(sunum)return;
+  try{
+    var a=histGet();
+    a.unshift({t:Date.now(),d:Math.floor(playT),s:Math.floor(fs),m:maxL,r:res,k:(maxL>=10?SHR:1),b:bodies.map(function(o){return[Math.round(o.x),Math.round(o.y),o.l]})});
+    a=a.slice(0,40);lsSet(HK,JSON.stringify(a));
+  }catch(e){}
+}
+var pendWin=false;
+function showWin(){
+  var w=$('win');
+  if(!w.querySelector('i')){var cs=['#ff6b9a','#ffd45a','#6bd6ff','#9aff8a','#c79bff'],h='',q;for(q=0;q<36;q++)h+='<i style="left:'+(q*2.8+Math.random()*2)+'%;background:'+cs[q%5]+';animation-duration:'+(3+Math.random()*3).toFixed(2)+'s;animation-delay:-'+(Math.random()*5).toFixed(2)+'s"></i>';w.insertAdjacentHTML('afterbegin',h)}
+  $('wScore').textContent=Math.floor(score);
+  state='win';aiming=false;w.hidden=false;sfxWin();
 }
 function showToast(l,v){
   var p=P[l],e=$('toast'),ft=p.f[v];
@@ -439,6 +516,7 @@ function sentences(t){
   for(i=0;i<a.length;i++){var x=a[i].replace(/\s+$/,'');if(!x)continue;if(x.charAt(x.length-1)!=='.'&&x.charAt(x.length-1)!==')')x+='.';o.push(x)}
   return o;
 }
+var rvUsed=false,rvAct=false,rvN=0,rvList=[];
 var lives=3,bigL=-1,bigQ=-1,sunSeen=[],finT=0;
 function renderBig(id,l,f){
   var c=$(id),g=c.getContext('2d'),w=c.width;
@@ -456,12 +534,13 @@ function showInfo(l,ft){
 function closeInfo(){
   if(state!=='info')return;
   $('pinfo').hidden=true;$('toast').hidden=true;bigL=-1;state=$('creator').hidden?'play':'create';lastDrop=t;
+  if(pendWin){pendWin=false;showWin()}
 }
 function fmtT(x){x=Math.floor(x);var m=Math.floor(x/60),y=x%60;return m+':'+(y<10?'0':'')+y}
 function gameOver(){
   state='over';sfxOver();saveBoard();
   if(!sunum){
-    var fs=score;
+    var fs=score;histSave(won?'b':'e',fs);runLive=false;
     if(fs>best){best=fs;lsSet(bestKey,''+best);newRec=true}
     $('oScore').textContent=fs;
     $('oTime').textContent='Oynama süresi: '+fmtT(playT);
@@ -497,7 +576,6 @@ function update(dt){
     if(dg)danger+=dt;else danger=Math.max(0,danger-dt*2);
     if(danger>.6)relief();
     if(state==='play'&&(eduOn||sunum)){eduT+=dt;if(eduT>=eduNext)askQ()}
-    if(sunum&&maxL>=NL-1){finT+=dt;if(finT>6){finT=0;sunSeen=[];newGame('normal')}}
   }else if(state==='over'&&sunum){
     overT+=dt;if(overT>3)newGame('normal');
   }
@@ -534,11 +612,11 @@ function relief(){
   var tot=0,i,b;
   if(!sunum){
     lives--;danger=-3;
-    for(i=0;i<bodies.length;i++){b=bodies[i];if(!b.dead&&(b.l===0||b.l===1||b.l===3)){b.dead=true;tot+=15+10*b.l;burst(b.x,b.y,'#ffd27a',14,200)}}
+    for(i=0;i<bodies.length;i++){b=bodies[i];if(!b.dead&&(b.l===0||b.l===1||b.l===3||(lives<=1&&b.l===4))){b.dead=true;tot+=15+10*b.l;burst(b.x,b.y,'#ffd27a',14,200)}}
     bodies=bodies.filter(function(q){return !q.dead});
     floats.push({x:200,y:FLOOR-100,t:2,txt:'1 CAN GİTTİ!',c:'#ff7a7a'});
     if(tot){addScore(tot);floats.push({x:200,y:FLOOR-60,t:2,txt:'KÜÇÜKLER PATLADI +'+tot,c:'#ffd27a'})}
-    if(lives<=0){lives=0;gameOver();return}
+    if(lives<=0){lives=0;if(!rvUsed){startRevive();return}gameOver();return}
     sfxOver();return;
   }
   var cand=bodies.filter(function(q){return !q.dead&&q.touched}).sort(function(x,y){return y.y-x.y});
@@ -768,6 +846,7 @@ function loadProf(){
 var me=loadProf(),boardDirty=false,lastSave=0,sessName=me?me.n:'';
 /* ---------- Ortak tablo (sunucu) ---------- */
 var API='https://gezegen-api.gezegen-birlestir.workers.dev';
+var sentG='?',sentGAt=0,gBusy=false;
 var adminKey=null,admFromPanel=false,apiOK=false,sentS=0,syncBusy=false,lastSyncAt=0,topCache=null,myRank=0,regBusy=false;
 function nk(x){var y=x;try{y=x.toLocaleLowerCase('tr-TR')}catch(e){y=x.toLowerCase()}return y.replace(/ı/g,'i').replace(/\s+/g,' ').trim()}
 function api(path,body,cb,ka,hdr){
@@ -810,12 +889,26 @@ function syncNow(urgent){
     if(st===401){serverLost();return}
     if(j&&typeof j.best==='number'){sentS=j.best;if(j.best>me.s){me.s=j.best;boardDirty=true}}
     if(j&&typeof j.rank==='number')myRank=j.rank;
+    pushGame(urgent);
+  },urgent);
+}
+/* Oyun kaydını sunucuya yedekle (hesap koduyla girince kalınan yerden devam için) */
+function pushGame(urgent){
+  if(!me||!me.tk||sunum||gBusy||!apiOK)return;
+  snap();
+  var js=me.g?JSON.stringify(me.g):'';
+  if(js===sentG)return;
+  if(!urgent&&Date.now()-sentGAt<12000)return;
+  gBusy=true;sentGAt=Date.now();
+  api('/save',{name:me.n,token:me.tk,game:me.g?JSON.parse(js):null},function(err,j,st){
+    gBusy=false;
+    if(!err&&j&&j.ok)sentG=js;
   },urgent);
 }
 function serverLost(){
   try{localStorage.removeItem('gz_prof')}catch(e){}
-  me=null;sessName='';sentS=0;bodies=[];state='menu';hideAll();$('toast').hidden=true;
-  showName('Adın tablodan silinmiş. Yeni bir ad seç.');
+  me=null;sessName='';sentS=0;sentG='?';bodies=[];state='menu';hideAll();$('toast').hidden=true;
+  showName('Hesap bilgin geçersiz (ad silinmiş ya da kod değişmiş). Yeni ad seç ya da hesap koduyla geri yükle.');
 }
 function genTok(){
   var a='',i;
@@ -824,12 +917,12 @@ function genTok(){
   return a;
 }
 function snap(){
-  if(!me||sunum)return;
+  if(!me||sunum||rvAct)return;
   if(state==='over'){if(mode==='normal')me.g=null;return}
   if(mode!=='normal')return;
   if(state!=='play'&&state!=='paused'&&state!=='quiz'&&state!=='info')return;
   var r=function(v){return Math.round(v*10)/10};
-  me.g={v:2,pt:Math.floor(playT),ls:lscore,mo:mode,s:score,c:cur,n:nxt,ml:maxL,lv:lives,w:won?1:0,b:bodies.map(function(o){return{x:r(o.x),y:r(o.y),vx:r(o.vx),vy:r(o.vy),l:o.l,a:r(o.a),t:o.touched?1:0}})};
+  me.g={v:2,pt:Math.floor(playT),ls:lscore,mo:mode,s:score,c:cur,n:nxt,ml:maxL,lv:lives,rv:rvUsed?1:0,w:won?1:0,b:bodies.map(function(o){return{x:r(o.x),y:r(o.y),vx:r(o.vx),vy:r(o.vy),l:o.l,a:r(o.a),t:o.touched?1:0}})};
 }
 function saveBoard(force){
   snap();
@@ -849,9 +942,9 @@ function loadGame(g){
     score=isFinite(+g.s)?Math.max(0,Math.floor(+g.s)):0;
     lscore=isFinite(+g.ls)?Math.max(0,Math.floor(+g.ls)):0;
     cur=(g.c>=0&&g.c<NL&&g.c===Math.floor(g.c))?g.c:pick();nxt=(g.n>=0&&g.n<NL&&g.n===Math.floor(g.n))?g.n:pick();
-    maxL=Math.max(0,Math.min(NL-1,Math.floor(+g.ml||0)));lives=(g.lv>=1&&g.lv<=3)?Math.floor(g.lv):3;won=!!g.w;combo=0;danger=0;banner=0;parts=[];floats=[];newRec=false;overT=0;
+    maxL=Math.max(0,Math.min(NL-1,Math.floor(+g.ml||0)));lives=(g.lv>=1&&g.lv<=3)?Math.floor(g.lv):3;won=!!g.w;rvUsed=!!g.rv;rvAct=false;combo=0;danger=0;banner=0;parts=[];floats=[];newRec=false;overT=0;
     bestKey='gz_best2';best=parseInt(lsGet(bestKey)||'0',10)||0;
-    lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=Math.max(0,Math.floor(+g.pt||0));hideAll();return true;
+    lastDrop=t;aimX=200;state='play';botT=1;eduT=0;eduNext=nextQTime();playT=Math.max(0,Math.floor(+g.pt||0));runLive=!sunum;hideAll();return true;
   }catch(err){return false}
 }
 function addScore(d){
@@ -860,25 +953,33 @@ function addScore(d){
   if(canCount())lscore=Math.max(0,lscore+d);
   if(me&&lscore>me.s){me.s=lscore;boardDirty=true}
 }
-function showName(msg){$('nameErr').textContent=msg||'';$('nameIn').value='';$('nameScr').hidden=false;setTimeout(function(){try{$('nameIn').focus()}catch(e){}},200)}
+function showName(msg){$('codeIn').hidden=true;$('codeIn').value='';$('codeToggle').textContent='Daha önce oynadım, hesap koduyla geri yükle';$('nameErr').textContent=msg||'';$('nameIn').value='';$('nameScr').hidden=false;setTimeout(function(){try{$('nameIn').focus()}catch(e){}},200)}
 function acceptName(){
   if(regBusy)return;
   var v=$('nameIn').value.replace(/\s+/g,' ').trim(),err=$('nameErr'),ok=$('nameOk');
   if(v.length<2){err.textContent='En az 2 harf yaz.';return}
   if(typeof navigator!=='undefined'&&navigator.onLine===false){err.textContent='Sunucuya bağlanılamadı. İnternete bağlanıp tekrar dene.';return}
   var pend=null;try{pend=JSON.parse(lsGet('gz_pend')||'null')}catch(e){pend=null}
-  var tk=(pend&&pend.k===nk(v)&&typeof pend.t==='string'&&pend.t.length>=32)?pend.t:genTok();
-  lsSet('gz_pend',JSON.stringify({k:nk(v),t:tk}));
+  var useCode=!$('codeIn').hidden,tk;
+  if(useCode){
+    tk=$('codeIn').value.toLowerCase().replace(/[^0-9a-f]/g,'');
+    if(tk.length<32||tk.length>64){err.textContent='Hesap kodu 32 harf/rakamdan oluşur. Tam olarak yaz.';return}
+  }else{
+    tk=(pend&&pend.k===nk(v)&&typeof pend.t==='string'&&pend.t.length>=32)?pend.t:genTok();
+    lsSet('gz_pend',JSON.stringify({k:nk(v),t:tk}));
+  }
   regBusy=true;ok.disabled=true;ok.textContent='Kontrol ediliyor…';err.textContent='';
   api('/register',{name:v,token:tk},function(e,j,st){
     regBusy=false;ok.disabled=false;ok.textContent='Tamam';
     if(e||st>=500||!j){err.textContent='Sunucuya bağlanılamadı. İnternete bağlanıp tekrar dene.';return}
     if(j.ok&&j.name){
       try{localStorage.removeItem('gz_pend')}catch(x){}
-      me={n:j.name,tk:tk,pr:false,s:0,d:Date.now(),g:null};sessName=me.n;sentS=0;apiOK=true;
+      me={n:j.name,tk:tk,pr:false,s:(useCode&&isFinite(+j.best))?Math.max(0,Math.floor(+j.best)):0,d:Date.now(),g:null};sessName=me.n;sentS=me.s;apiOK=true;sentG='';
+      if(useCode&&j.game&&typeof j.game==='object'&&Array.isArray(j.game.b)&&j.game.v===2){me.g=j.game;sentG=JSON.stringify(j.game);if(loadGame(me.g))state='paused';else me.g=null}
       saveBoard(true);$('nameScr').hidden=true;err.textContent='';openMenu();return;
     }
     var m={taken:'Bu ad alınmış. Başka bir ad seç.',bad:'Bu ad uygun değil. Başka bir ad seç.',chars:'Sadece harf, rakam, boşluk, nokta, tire ve alt çizgi kullan (en fazla 14 karakter).',short:'En az 2 harf yaz.'};
+    if(useCode&&j.err==='taken'){err.textContent='Ad ya da kod yanlış. Kontrol edip tekrar dene.';return}
     if(j.err==='taken'||j.err==='bad')try{localStorage.removeItem('gz_pend')}catch(x){}
     err.textContent=m[j.err]||'Bir sorun oldu. Tekrar dene.';
   });
@@ -890,7 +991,7 @@ function initSession(){
   }
   showName();
 }
-function rowEl(rank,name,score,isMe,sub,onDel){
+function rowEl(rank,name,score,isMe,sub,onDel,onCode){
   var row=document.createElement('div');row.className='row'+(isMe?' me':'');
   var rk=document.createElement('b');rk.textContent=rank?rank+'.':'';rk.style.width='34px';
   var mid=document.createElement('div');mid.style.flex='1';
@@ -898,6 +999,7 @@ function rowEl(rank,name,score,isMe,sub,onDel){
   if(sub){var dt=document.createElement('p');dt.textContent=sub;mid.appendChild(dt)}
   var sc2=document.createElement('b');sc2.textContent=score;sc2.style.color='#ffd27a';
   row.appendChild(rk);row.appendChild(mid);row.appendChild(sc2);
+  if(onCode){var cb=document.createElement('button');cb.className='del';cb.style.background='#2a6df4';cb.style.marginRight='6px';cb.textContent='Kod';cb.onclick=onCode;row.appendChild(cb)}
   if(onDel){var db=document.createElement('button');db.className='del';db.textContent='Sil';db.onclick=onDel;row.appendChild(db)}
   return row;
 }
@@ -918,7 +1020,7 @@ function buildBoard(){
     if(arr)arr.slice(0,adminKey?100:50).forEach(function(e,i){
       if(!e||typeof e.name!=='string')return;
       var isMe=nk(e.name)===mk;if(isMe)found=true;
-      list.appendChild(rowEl(i+1,e.name,e.score|0,isMe,isMe&&act?'şu an: '+score:'',adminKey?function(){admDelete(e.name)}:null));
+      list.appendChild(rowEl(i+1,e.name,e.score|0,isMe,isMe&&act?'şu an: '+score:'',adminKey?function(){admDelete(e.name)}:null,adminKey?function(){admCode(e.name)}:null));
     });
     if(me&&!found){
       var sep=document.createElement('div');sep.className='tiny';sep.style.maxWidth='none';sep.textContent=myRank>0?'Senin sıran: '+myRank:'';
@@ -996,17 +1098,17 @@ function pickQ(){
   if(!fresh.length){qUsed=qUsed.filter(function(x){return el.indexOf(x)<0});fresh=el}
   return fresh[Math.floor(Math.random()*fresh.length)];
 }
-function askQ(){
-  var idx=pickQ();
+function askQ(forceIdx,rev){
+  var idx=(forceIdx!==undefined&&forceIdx!==null)?forceIdx:pickQ();
   if(idx<0){eduT=0;eduNext=nextQTime();return}
   qUsed.push(idx);
   var q=Q[idx],order=[0,1,2],i,j,tmp;
   for(i=2;i>0;i--){j=Math.floor(Math.random()*(i+1));tmp=order[i];order[i]=order[j];order[j]=tmp}
-  qCur={q:q,done:false,ready:false};aiming=false;state='quiz';$('toast').hidden=true;
+  qCur={q:q,done:false,ready:false,rev:!!rev,ok:false};aiming=false;state='quiz';$('toast').hidden=true;
   var tl=function(x){var y=x;try{y=x.toLocaleLowerCase('tr-TR')}catch(e){y=x.toLowerCase()}return y};
   var hide=/hangi/i.test(q.q)||tl(q.o[q.a]).indexOf(tl(P[q.l].n))>=0;
   bigQ=hide?-1:q.l;$('qMark').hidden=!hide;$('qCv').style.display=hide?'none':'block';
-  $('qTag').textContent='EĞİTİM SORUSU · '+(q.z===100?'Kolay':q.z===125?'Orta':'Zor')+' (+'+q.z+')';
+  $('qTag').textContent=rev?'TELAFİ HAKKI · Soru '+(rvN+1)+'/3 · Üçünü de bilirsen canların dolar':'EĞİTİM SORUSU · '+(q.z===100?'Kolay':q.z===125?'Orta':'Zor')+' (+'+q.z+')';
   $('qText').textContent=q.q;
   var box=$('qOpts');box.innerHTML='';
   order.forEach(function(oi,n){
@@ -1015,12 +1117,18 @@ function askQ(){
     b.onclick=function(){answerQ(oi)};b.setAttribute('data-i',oi);box.appendChild(b);
   });
   var qc=qCur;setTimeout(function(){qc.ready=true},1100);
-  $('qRes').innerHTML='';$('qNext').hidden=true;$('quiz').hidden=false;
+  $('qRes').innerHTML='';$('qNext').textContent='Devam';$('qNext').hidden=true;$('quiz').hidden=false;
 }
 function answerQ(oi){
   if(!qCur||qCur.done||!qCur.ready)return;qCur.done=true;
   var q=qCur.q,ok=oi===q.a,bs=$('qOpts').children,i;
   for(i=0;i<bs.length;i++){var v=parseInt(bs[i].getAttribute('data-i'),10);if(v===q.a)bs[i].className='btn ok';else if(v===oi)bs[i].className='btn bad'}
+  qCur.ok=ok;
+  if(qCur.rev){
+    if(ok){rvN++;$('qRes').innerHTML='<div class="fadein"><b>Doğru! ('+rvN+'/3)</b><br>'+q.e+'</div>';$('qNext').textContent=rvN<3?'Sonraki soru':'Oyuna dön'}
+    else{$('qRes').innerHTML='<div class="fadein"><b>Olmadı. Doğru cevap: '+q.o[q.a]+'</b><br>'+q.e+'</div>';$('qNext').textContent='Devam'}
+    $('qNext').hidden=false;return;
+  }
   if(ok){addScore(q.z);$('qRes').innerHTML='<div class="fadein"><b>Doğru! +'+q.z+' puan</b><br>'+q.e+'</div>'}
   else{var pen=q.z>=150?50:q.z>=125?125:200;addScore(-pen);$('qRes').innerHTML='<div class="fadein"><b>Olmadı. −'+pen+' puan. Doğru cevap: '+q.o[q.a]+'</b><br>'+q.e+'</div>'}
   saveBoard();$('qNext').hidden=false;
@@ -1030,6 +1138,7 @@ $('infoClose').onclick=closeInfo;
 function setEduTxt(){$('bEdu').textContent='Eğitim Modu: '+(eduOn?'Açık':'Kapalı')}
 
 function doReset(cn){
+  if(runLive&&score>0)histSave(won?'b':'y',score);runLive=false;
   if(me){me.s=0;me.g=null;me.pr=!cn}
   seenD=[];try{localStorage.removeItem('gz_seen2')}catch(e){}
   try{var del=[],i,k;for(i=0;i<localStorage.length;i++){k=localStorage.key(i);if(k==='gz_max2'||k==='gz_best2'||(k&&k.indexOf('gz_bd2_')===0))del.push(k)}del.forEach(function(x){localStorage.removeItem(x)})}catch(e){}
@@ -1043,6 +1152,23 @@ function doReset(cn){
   saveBoard(true);lastSyncAt=0;syncNow();
   hideAll();$('confirmScr').hidden=true;$('toast').hidden=true;
   openMenu();
+}
+function admCopy(txt){
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).catch(function(){});return true}}catch(e){}
+  try{var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();var ok=document.execCommand('copy');document.body.removeChild(ta);return ok}catch(e){return false}
+}
+function admCode(name,renew){
+  if(!adminKey)return;
+  api('/admin',{action:renew?'newcode':'code',name:name},function(err,j,st){
+    if(st===401){adminKey=null;$('board').hidden=true;$('menu').hidden=false;return}
+    if(err||!j||!j.ok){alert('Kod alınamadı.');return}
+    if(!j.code){
+      if(confirm('"'+j.name+'" hesabının kodu henüz kayıtlı değil (oyuncu bir kez oynayınca otomatik kaydedilir).\n\nŞimdi yeni bir kod atansın mı? (Oyuncunun eski cihazındaki giriş geçersiz olur, bu kodla girmesi gerekir.)'))admCode(name,true);
+      return;
+    }
+    var c=admCopy(j.code);
+    alert((renew?'YENİ KOD ATANDI\n':'')+'Ad: '+j.name+'\nHesap kodu:\n'+j.code+'\n\n'+(c?'Kod panoya kopyalandı.':'Kopyalanamadı, kodu elle kopyala.'));
+  },false,{'x-admin-key':adminKey});
 }
 function admDelete(name){
   if(!adminKey||!confirm('"'+name+'" adı silinsin mi?'))return;
@@ -1086,6 +1212,40 @@ $('bCont').onclick=function(){
   if(state==='paused'){state='play';lastDrop=t;hideAll();return}
   newGame('normal');
 };
+var MONTHS=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+function buildHist(){
+  var a=histGet(),l=$('hlist'),i;l.innerHTML='';
+  $('hEmpty').hidden=a.length>0;$('hClear').hidden=a.length===0;$('hClear').textContent='Geçmişi Temizle';
+  for(i=0;i<a.length;i++)(function(e,i){
+    var d=new Date(e.t),row=document.createElement('div');row.className='row';
+    var tg=e.r==='b'?['b','Başardın']:e.r==='e'?['e','Elendin']:['y','Yarım bırakıldı'];
+    var pl=P[Math.max(0,Math.min(NL-1,e.m|0))].n;
+    row.innerHTML='<div class="hr1"><b>'+e.s+' puan</b><span class="tag '+tg[0]+'">'+tg[1]+'</span></div>'+
+      '<div class="hr2">'+d.getDate()+' '+MONTHS[d.getMonth()]+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+' · Süre '+fmtT(e.d)+'<br>En yüksek gezegen: '+pl+'</div>';
+    var b=document.createElement('button');b.className='hb';b.textContent='Son halini gör';b.onclick=function(){openHView(e)};
+    row.appendChild(b);l.appendChild(row);
+  })(a[i],i);
+}
+var hvE=null,hvRaf=0;
+function drawHView(){
+  if($('hview').hidden||!hvE){hvRaf=0;return}
+  var c=$('hCv'),g=c.getContext('2d'),e=hvE,tm=performance.now()/1000,i;
+  g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,400,720);
+  g.fillStyle='#0b1030';g.fillRect(0,0,400,720);
+  g.strokeStyle='rgba(120,140,220,.9)';g.lineWidth=6;g.beginPath();g.moveTo(L,LINE-40);g.lineTo(L,FLOOR);g.lineTo(R,FLOOR);g.lineTo(R,LINE-40);g.stroke();
+  g.strokeStyle='rgba(255,255,255,.28)';g.lineWidth=2;g.setLineDash([10,8]);g.beginPath();g.moveTo(L,LINE);g.lineTo(R,LINE);g.stroke();g.setLineDash([]);
+  for(i=0;i<e.b.length;i++){var q=e.b[i],r0=P[q[2]].r0*(e.k||1);drawPlanet(g,q[0],q[1],r0,q[2],i*1.7,tm)}
+  hvRaf=requestAnimationFrame(drawHView);
+}
+function openHView(e){
+  hvE=e;var d=new Date(e.t);
+  $('hvTitle').textContent=e.s+' puan · '+fmtT(e.d)+' · '+(e.r==='b'?'Başardın':e.r==='e'?'Elendin':'Yarım bırakıldı')+' — son görünüm';
+  $('hview').hidden=false;if(!hvRaf)hvRaf=requestAnimationFrame(drawHView);
+}
+$('bHist').onclick=function(){buildHist();$('menu').hidden=true;$('hist').hidden=false};
+$('hBack').onclick=function(){$('hist').hidden=true;$('menu').hidden=false};
+$('hvClose').onclick=function(){$('hview').hidden=true;hvE=null};
+$('hClear').onclick=function(){var b=$('hClear');if(b.dataset.s==='1'){lsSet(HK,'[]');b.dataset.s='';buildHist();return}b.dataset.s='1';b.textContent='Emin misin? Tekrar dokun';setTimeout(function(){b.dataset.s='';if(b.textContent!=='Geçmişi Temizle')b.textContent='Geçmişi Temizle'},3000)};
 $('bCards').onclick=function(){buildList();$('menu').hidden=true;$('cards').hidden=false};
 $('bBack').onclick=function(){$('cards').hidden=true;$('menu').hidden=false};
 $('bPres').onclick=function(){sunum=true;sunSeen=[];finT=0;newGame('normal');$('sunBar').hidden=false;placeSun()};
@@ -1111,10 +1271,61 @@ $('sbCre').onclick=function(){if(state!=='play')return;state='create';aiming=fal
 $('cClose').onclick=function(){$('creator').hidden=true;state='play';lastDrop=t};
 $('bSnd').onclick=function(){setMute(!muted)};
 $('bEdu').onclick=function(){eduOn=!eduOn;lsSet('gz_edu',eduOn?'1':'0');setEduTxt();eduT=0};
-$('qNext').onclick=closeQ;
+function startRevive(){
+  var el=[],i,lim;
+  for(lim=maxL;lim<=NL+4&&el.length<3;lim+=2){el=[];for(i=0;i<Q.length;i++)if(Q[i].l<=lim)el.push(i)}
+  for(i=el.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),tmp=el[i];el[i]=el[j];el[j]=tmp}
+  if(el.length<3){gameOver();return}
+  rvList=el.slice(0,3);rvN=0;rvAct=true;aiming=false;$('toast').hidden=true;
+  askQ(rvList[0],true);
+}
+function reviveDone(){
+  var midY=(LINE+FLOOR)/2,i,b,n=0;
+  var big=bodies.slice().sort(function(x,y){return y.l-x.l||y.y-x.y}).slice(0,3);
+  for(i=0;i<bodies.length;i++){b=bodies[i];
+    if(big.indexOf(b)>=0){
+      var mn=LINE+12+b.r;
+      if(b.y<mn){b.y=mn;b.vx=0;b.vy=0}
+      continue;
+    }
+    if(b.y<midY||b.y-b.r<LINE+6){b.dead=true;n++;burst(b.x,b.y,'#7af0a0',12,220)}}
+  bodies=bodies.filter(function(q){return !q.dead});
+  lives=3;rvUsed=true;rvAct=false;danger=-3;qCur=null;bigQ=-1;
+  $('quiz').hidden=true;state='play';lastDrop=t;eduT=0;eduNext=nextQTime();
+  floats.push({x:200,y:FLOOR-100,t:2.4,txt:'TELAFİ! CANLAR DOLDU',c:'#7af0a0'});
+  sfxMerge(3,1);saveBoard(true);
+}
+function nextQ(){
+  if(qCur&&qCur.rev){
+    if(qCur.ok){if(rvN<3)askQ(rvList[rvN],true);else reviveDone()}
+    else{rvAct=false;$('quiz').hidden=true;qCur=null;bigQ=-1;gameOver()}
+    return;
+  }
+  closeQ();
+}
+$('qNext').onclick=nextQ;
 $('bBoard').onclick=function(){admFromPanel=false;buildBoard();$('menu').hidden=true;$('board').hidden=false};
 $('boardBack').onclick=function(){$('board').hidden=true;if(adminKey&&admFromPanel){$('admPanel').hidden=false}else{$('menu').hidden=false}};
 $('nameOk').onclick=acceptName;
+$('codeToggle').onclick=function(){
+  var c=$('codeIn'),on=c.hidden;c.hidden=!on;$('nameErr').textContent='';
+  $('codeToggle').textContent=on?'Vazgeç, yeni ad seç':'Daha önce oynadım, hesap koduyla geri yükle';
+  if(on)try{c.focus()}catch(e){}
+};
+$('bAcct').onclick=function(){
+  if(!me){return}
+  var t=me.tk||'';$('acName').textContent='Ad: '+me.n;
+  $('acCode').textContent=t.replace(/(.{4})/g,'$1 ').trim().replace(/^((?:\S{4} ){4})/,'$1\n');
+  $('acCopy').textContent='Kopyala';$('menu').hidden=true;$('acct').hidden=false;
+};
+$('acBack').onclick=function(){$('acct').hidden=true;$('menu').hidden=false};
+$('acCopy').onclick=function(){
+  var t=me&&me.tk||'',b=$('acCopy');
+  function ok(){b.textContent='Kopyalandı ✓'}
+  function fb(){try{var r=document.createRange();r.selectNodeContents($('acCode'));var sl=window.getSelection();sl.removeAllRanges();sl.addRange(r);document.execCommand('copy');ok()}catch(e){b.textContent='Kodu basılı tutup kopyala'}}
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,fb);return}}catch(e){}
+  fb();
+};
 $('bReset').onclick=function(){$('rstErr').textContent='';$('confirmScr').hidden=false};
 $('rstNo').onclick=function(){$('confirmScr').hidden=true};
 $('rstYes').onclick=function(){doReset(false)};
@@ -1154,6 +1365,9 @@ $('admClear').onclick=function(){
 };
 $('nameIn').addEventListener('keydown',function(e){if(e.key==='Enter')acceptName()});
 $('bAgain').onclick=function(){newGame(mode)};
+$('bWinCont').onclick=function(){$('win').hidden=true;state='play';lastDrop=t};
+$('bWinNew').onclick=function(){$('win').hidden=true;newGame('normal')};
+$('bWinMenu').onclick=function(){$('win').hidden=true;if(sunum){exitSunum();return}state='menu';openMenu()};
 $('bMenu2').onclick=function(){state='menu';$('over').hidden=true;openMenu()};
 setMute(muted);setEduTxt();
 
@@ -1194,7 +1408,7 @@ function loop(ts){
   if(!$('quiz').hidden&&bigQ>=0)renderBig('qCv',bigQ,bigQ===10||bigQ===11?.28:(bigQ>=12&&bigQ<=14?.44:.36));
   requestAnimationFrame(loop);
 }
-window.__gz={qcur:function(){return qCur&&qCur.q},sqmax:function(v){if(v!==undefined)sqMax=v;return sqMax},sqth:function(v){SQTH=v},lives:function(){return lives},upd:update,relief:relief,sunn:function(){return sunum},nb:function(){return bodies.length},pk:function(){return pick()},setMax:function(v){maxL=v},bigL:function(){return bigL},bigQ:function(){return bigQ},dp:function(g,x,y,r,l,a,tm){drawPlanet(g,x,y,r,l,a,tm)},hit:function(l){return P[l].r*(P[l].h||1)},sync:function(){syncNow()},apiok:function(){return apiOK},sent:function(){return sentS},canc:function(){return canCount()},prof:function(){return JSON.stringify(me)},ls:function(){return lscore},radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},seen:function(){return seenD.slice()},markSeen:function(k){seenD.push(k)},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},set score(v){score=v},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
+window.__gz={hist:function(){return histGet()},setlives:function(v){lives=v},qcur:function(){return qCur&&qCur.q},sqmax:function(v){if(v!==undefined)sqMax=v;return sqMax},sqth:function(v){SQTH=v},lives:function(){return lives},upd:update,relief:relief,sunn:function(){return sunum},nb:function(){return bodies.length},pk:function(){return pick()},setMax:function(v){maxL=v},bigL:function(){return bigL},bigQ:function(){return bigQ},dp:function(g,x,y,r,l,a,tm){drawPlanet(g,x,y,r,l,a,tm)},hit:function(l){return P[l].r*(P[l].h||1)},sync:function(){syncNow()},apiok:function(){return apiOK},sent:function(){return sentS},canc:function(){return canCount()},prof:function(){return JSON.stringify(me)},ls:function(){return lscore},radii:function(){return P.map(function(p){return p.r})},line:function(){return LINE},grav:function(v){G=v},pt:function(){return playT},over:function(){gameOver()},bpos:function(){return bodies.map(function(b){return [b.x,b.y]})},put:function(l,x,y,tc){var q=mk(x,y,l);if(tc){q.touched=true;q.age=1}bodies.push(q)},en:function(){return eduNext},qlvl:function(){return qCur&&qCur.q.l},name:function(){return sessName},ask:function(){askQ()},rev:function(){startRevive()},dbg:function(){return JSON.stringify(bodies.map(function(b){return b.l}))},rvu:function(){return rvUsed},seen:function(){return seenD.slice()},markSeen:function(k){seenD.push(k)},edu:function(v){eduT=v},get qstate(){return state},get state(){return state},get score(){return score},set score(v){score=v},get n(){return bodies.length},set aim(v){aimX=v},drop:drop,newGame:newGame,get maxL(){return maxL}};
 openMenu();initSession();syncNow();
 requestAnimationFrame(loop);
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('./sw.js').catch(function(){});
